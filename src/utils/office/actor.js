@@ -67,7 +67,6 @@ export class Actor {
     this.directWalk = false; // animate the walk cycle during a direct move
     this.exiting = false; // standing up / dropping off the bar
     /** @type {number | null} */ this.zOverride = null; // pinned depth (seats)
-    this.ghostUntil = 0; // separation ignored until (deadlock escape)
     this.travelToken = 0;
     /** @type {any} */ this.activity = null;
     /** @type {any} */ this.member = null;
@@ -184,15 +183,14 @@ export class Actor {
     const blockers = opts.avoid === false ? [] : this.engine.blockersFor(this);
     let path = nav.findPath({ x: this.x, y: this.y }, target, blockers);
     if (!path) path = nav.findPath({ x: this.x, y: this.y }, target, []);
-    if (!path) path = [nav.nearestWalkable(target)];
-    this.path = path;
-    this.goal = path[path.length - 1];
+    this.path = path || [];
+    this.goal = this.path.at(-1) || target;
     this.moveMode = opts.mode || "walk";
     // long dashes sprint (up to +45%): far-away staff still make the huddle
     let len = 0;
     let px = this.x;
     let py = this.y;
-    for (const p of path) {
+    for (const p of this.path) {
       len += Math.hypot(p.x - px, p.y - py);
       px = p.x;
       py = p.y;
@@ -201,48 +199,28 @@ export class Actor {
     this.direct = false;
     this.onArrive = opts.onArrive || null;
     this.blockedFor = 0;
+    if (!this.path.length) {
+      const token = this.travelToken;
+      this.engine.after(TIMING.YIELD_MAX, () => {
+        if (this.goal === target && this.travelToken === token && !this.path.length) {
+          this.moveTo(target, opts);
+        }
+      });
+    }
   }
 
   /** Scripted straight move (into a seat / onto the bar). Ignores the nav grid. */
   moveDirect(target, speed, onArrive) {
     this.path = [target];
     this.goal = target;
+    this.directStart = { x: this.x, y: this.y };
     this.direct = true;
     this.directSpeed = speed;
     this.moveMode = null;
     this.onArrive = onArrive || null;
   }
 
-  /** Step aside (perpendicular, onto walkable floor) and then resume the route. */
-  sidestep(other) {
-    const goal = this.goal;
-    const mode = this.moveMode || "walk";
-    const cb = this.onArrive;
-    const ax = other.x - this.x;
-    const ay = other.y - this.y;
-    const len = Math.hypot(ax, ay) || 1;
-    const nav = this.engine.nav;
-    const cands = [1, -1].map((side) => ({
-      x: this.x + (-ay / len) * 48 * side,
-      y: this.y + (ax / len) * 24 * side,
-    }));
-    const spot =
-      cands.find((p) => nav.walkableAt(p.x, p.y)) ||
-      nav.nearestWalkable({ x: this.x - ax * 0.6, y: this.y - ay * 0.6 });
-    this.sidestepping = true;
-    this.moveTo(spot, {
-      mode,
-      avoid: false,
-      onArrive: () => {
-        this.sidestepping = false;
-        if (goal) this.moveTo(goal, { mode, onArrive: cb || undefined });
-      },
-    });
-    this.blockedFor = 0;
-  }
-
   stop() {
-    this.sidestepping = false;
     this.path = [];
     this.goal = null;
     this.moveMode = null;
@@ -304,7 +282,7 @@ export class Actor {
 
     // teleport guard (debug counter): nothing may move faster than running
     const moved = Math.hypot(this.x - this.px, this.y - this.py);
-    if (moved > TIMING.RUN_SPEED * 1.8 * dt + 0.5 && !this.engine.allowJump) {
+    if (moved > TIMING.RUN_SPEED * dt + 1e-6 && !this.engine.allowJump) {
       this.engine.debugStats.teleports++;
       if (this.engine.debug)
         console.warn(`[office] ${this.id} jumped ${moved.toFixed(1)}px in one step`);
@@ -321,8 +299,8 @@ export class Actor {
     let speed;
     if (this.direct) speed = this.directSpeed;
     else
-      speed = this.moveMode === "run" ? TIMING.RUN_SPEED * (this.sprint || 1) : TIMING.WALK_SPEED;
-    speed *= depthScale(this.y);
+      speed = this.moveMode === "run" ? TIMING.JOG_SPEED * (this.sprint || 1) : TIMING.WALK_SPEED;
+    speed = Math.min(TIMING.RUN_SPEED, speed * depthScale(this.y));
 
     // arrive easing on the final leg
     if (isLast && !this.direct) {
@@ -332,54 +310,42 @@ export class Actor {
         speed *= Math.max(floor, remaining / TIMING.ARRIVE_RADIUS);
     }
 
-    // separation: wait for whoever is in the way; replan around them if it
-    // lasts; if still stuck head-on, the lower-priority actor side-steps
-    // (the last few px of the final leg never yield: a neighbour that happens
-    // to sit "ahead" of a tiny remaining vector must not freeze the arrival)
-    if (!this.direct && !(isLast && dist < 14)) {
-      const other =
-        this.ghostUntil > this.engine.time
-          ? null
-          : this.engine.actorAhead(this, dx / (dist || 1), dy / (dist || 1));
-      if (other) {
-        this.blockedFor += dt;
-        // last resort against deadlocks: someone parked in a 1-wide corridor
-        // who will never move -> squeeze past them (brief overlap, no freeze)
-        if (this.blockedFor > TIMING.YIELD_MAX * 3.5 && Math.hypot(other.vx, other.vy) < 1) {
-          this.ghostUntil = this.engine.time + 1.4;
-          this.blockedFor = 0;
-          return;
-        }
-        if (
-          this.blockedFor > TIMING.YIELD_MAX * 2.5 &&
-          other.index < this.index &&
-          !this.sidestepping
-        ) {
-          this.sidestep(other);
-          return;
-        }
-        if (this.blockedFor > TIMING.YIELD_MAX && !this.replanned) {
-          this.replanned = true;
-          const goal = this.goal;
-          const mode = this.moveMode || "walk";
-          const cb = this.onArrive;
-          const keep = this.blockedFor;
-          if (goal) this.moveTo(goal, { mode, onArrive: cb || undefined });
-          this.blockedFor = keep;
-        }
-        this.vx = 0;
-        this.vy = 0;
+    const stepLen = Math.min(dist, speed * dt);
+    const nx = dx / (dist || 1);
+    const ny = dy / (dist || 1);
+    if (!this.clearStep(this.x + nx * stepLen, this.y + ny * stepLen)) {
+      this.vx = this.vy = 0;
+      this.blockedFor += dt;
+      if (!dt) return;
+      if (!this.direct && this.blockedFor > TIMING.YIELD_MAX) {
+        this.moveTo(this.goal, { mode: this.moveMode, onArrive: this.onArrive });
         return;
       }
-      this.blockedFor = 0;
-      this.replanned = false;
-      // fall in line behind someone heading the same way
-      const leader = this.engine.leaderAhead(this, dx / (dist || 1), dy / (dist || 1));
-      if (leader) speed = Math.min(speed, Math.hypot(leader.vx, leader.vy) * 0.97);
+      // Pass on the right first. Both walkers use the same rule even when
+      // approaching head-on. Every candidate stays on the walkable floor.
+      for (const angle of [0.6, -0.6, 1.1, -1.1, 1.6, -1.6]) {
+        const sx = nx * Math.cos(angle) - ny * Math.sin(angle);
+        const sy = nx * Math.sin(angle) + ny * Math.cos(angle);
+        const dest = { x: this.x + sx * stepLen, y: this.y + sy * stepLen };
+        const inLane = this.direct
+          ? this.inStationLane(dest)
+          : this.engine.nav.lineOfSight(this, dest);
+        if (inLane && this.clearStep(dest.x, dest.y)) {
+          this.vx = sx * speed;
+          this.vy = sy * speed;
+          this.x = dest.x;
+          this.y = dest.y;
+          // Rejoin the original path only when the next segment clears furniture.
+          if (!this.direct && !this.engine.nav.lineOfSight(dest, target)) {
+            this.moveTo(this.goal, { mode: this.moveMode, onArrive: this.onArrive });
+          }
+          break;
+        }
+      }
+      return;
     }
-
-    const stepLen = speed * dt;
-    if (dist <= stepLen || dist < 0.5) {
+    this.blockedFor = 0;
+    if (dist <= stepLen) {
       this.x = target.x;
       this.y = target.y;
       this.path.shift();
@@ -390,12 +356,29 @@ export class Actor {
       }
       return;
     }
-    const nx = dx / dist;
-    const ny = dy / dist;
     this.vx = nx * speed;
     this.vy = ny * speed;
     this.x += nx * stepLen;
     this.y += ny * stepLen;
+  }
+
+  clearStep(x, y) {
+    return this.engine.actors.every((other) => {
+      if (other === this || other.alpha < 0.5) return true;
+      const next = ellipseDist(x, y, other.x, other.y);
+      return next >= TIMING.PERSONAL_SPACE || next > this.distTo(other);
+    });
+  }
+
+  // Seat and bar transitions intentionally cross their furniture footprint.
+  // Allow enough width to pass a colleague while staying beside the seat.
+  inStationLane(point) {
+    const start = this.directStart;
+    const dx = this.goal.x - start.x;
+    const dy = this.goal.y - start.y;
+    const along = ((point.x - start.x) * dx + (point.y - start.y) * dy) / (dx * dx + dy * dy || 1);
+    const t = Math.min(1, Math.max(0, along));
+    return Math.hypot(point.x - start.x - t * dx, point.y - start.y - t * dy) < TIMING.PERSONAL_SPACE;
   }
 
   // ------------------------------------------------------------------------

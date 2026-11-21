@@ -12,7 +12,8 @@ export const TIMING = {
   // --- sprites ----------------------------------------------------------------
   SPRITE_SCALE: 1.25, // world px per sheet px (standing ≈ 0.75x squat rack)
   WALK_SPEED: 104,
-  RUN_SPEED: 285,
+  JOG_SPEED: 285,
+  RUN_SPEED: 420, // hard per-step speed limit, including depth and long dashes
   // world px travelled per full 8-frame cycle at SPRITE_SCALE; anim fps is
   // derived from speed so feet don't skate (tuned by eye in the player)
   WALK_CYCLE_PX: 92,

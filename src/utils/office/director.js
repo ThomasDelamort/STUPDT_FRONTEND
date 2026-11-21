@@ -141,8 +141,8 @@ export class Director {
     this.sceneIndex = OFFICE_SCENES.indexOf(scene);
     this.sceneT = 0;
     this.sceneDur = this.rng.range(TIMING.SCENE_MIN, TIMING.SCENE_MAX);
-    // whole-cast scenes (couch summit, 2v2) are a set piece: keep them short
-    if (scene.groups.length === 1) this.sceneDur = this.rng.range(TIMING.SCENE_MIN, 22);
+    // The whole cast needs time to arrive and play the group scene together.
+    if (scene.groups.length === 1) this.sceneDur = this.rng.range(25, TIMING.SCENE_MAX);
     const plan = this.assign(scene);
     /** @type {Map<string, {actor: any, spotId: string}[]>} */
     const byGroup = new Map();
@@ -469,24 +469,40 @@ class Huddle {
 
   assignSlots() {
     const H = OFFICE_HUDDLE;
-    const slots = H.slots.slice(0, Math.max(this.actors.length, 4)).map((deg) => {
+    const angles = this.actors.length <= H.slots.length
+      ? H.slots.slice(0, this.actors.length)
+      : this.actors.map((_, i) => 190 + (360 * i) / this.actors.length);
+    const slots = angles.map((deg) => {
       const r = (deg * Math.PI) / 180;
       return { x: H.x + Math.cos(r) * H.rx, y: H.y + Math.sin(r) * H.ry };
     });
-    // nearest slot first, no two actors share one
-    const pairs = [];
-    this.actors.forEach((a) =>
-      slots.forEach((s, si) => pairs.push({ a, si, d: Math.hypot(a.x - s.x, a.y - s.y) })),
-    );
-    pairs.sort((p, q) => p.d - q.d);
-    const usedA = new Set();
-    const usedS = new Set();
-    for (const p of pairs) {
-      if (usedA.has(p.a) || usedS.has(p.si)) continue;
-      usedA.add(p.a);
-      usedS.add(p.si);
-      this.slots.set(p.a, slots[p.si]);
+    // Minimize the last arrival. A seat across the chess table can look
+    // close to a slot while requiring the longest walk around the furniture.
+    const lengths = this.actors.map((actor) => slots.map((slot) => {
+      let previous = actor.exiting && actor.goal ? actor.goal : actor;
+      let length = Math.hypot(actor.x - previous.x, actor.y - previous.y);
+      const path = this.engine.nav.findPath(previous, slot);
+      if (!path) return Infinity;
+      for (const waypoint of path) {
+        length += Math.hypot(waypoint.x - previous.x, waypoint.y - previous.y);
+        previous = waypoint;
+      }
+      return length;
+    }));
+    let best = slots.map((_, i) => i);
+    let shortestLast = Infinity;
+    let shortestTotal = Infinity;
+    for (const order of permutations(best)) {
+      const distances = this.actors.map((_, i) => lengths[i][order[i]]);
+      const last = Math.max(...distances);
+      const total = distances.reduce((sum, distance) => sum + distance, 0);
+      if (last < shortestLast || (last === shortestLast && total < shortestTotal)) {
+        best = order;
+        shortestLast = last;
+        shortestTotal = total;
+      }
     }
+    this.actors.forEach((actor, i) => this.slots.set(actor, slots[best[i]]));
   }
 
   goToHuddle() {
@@ -497,9 +513,9 @@ class Huddle {
 
   sendToSlot(a) {
     const slot = this.slots.get(a);
-    a.fxHook = null;
     a.state = "go_to_huddle";
     const go = () => {
+      a.fxHook = null;
       a.zOverride = null;
       a.setPose("stand");
       travel(this.engine, a, slot, {
@@ -773,7 +789,7 @@ class Panic {
   stop() {
     this.engine.panicTicker = null;
     for (const a of this.engine.actors) {
-      cancelTravel(a);
+      if (!a.exiting) cancelTravel(a);
       a.mark = null;
       a.setPose("stand");
       a.state = "idle";

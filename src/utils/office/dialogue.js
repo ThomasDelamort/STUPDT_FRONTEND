@@ -68,6 +68,7 @@ export class Dialogue {
     /** @type {Set<string>} */
     this.current = new Set();
     this.ambientRng = new Rng(hashString("office-ambient") ^ Date.now());
+    this.continuations = 0;
   }
 
   /** Lines used in the last RECENT_PROMPTS prompts (+ the current one). */
@@ -151,7 +152,13 @@ export class Dialogue {
   stallBeat(rng, heat = 2) {
     const recent = this.recent();
     const pool = OFFICE_STALL_LINES.filter((l) => !recent.has(l.text));
-    const l = rng.pick(pool.length ? pool : OFFICE_STALL_LINES);
+    if (!pool.length) {
+      // A slow transfer can outlive the entire pool. Number the follow-ups
+      // so a long meeting stays unique without retaining unbounded history.
+      const text = `Addendum ${++this.continuations}. Still awaiting a signature.`;
+      return this.lineBeat({ text, gesture: "think" }, rng, heat, {});
+    }
+    const l = rng.pick(pool);
     this.use(l.text);
     return this.lineBeat(l, rng, heat, {});
   }

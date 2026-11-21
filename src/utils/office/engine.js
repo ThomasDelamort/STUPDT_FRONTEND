@@ -9,7 +9,7 @@ import patchBagUrl from "../../assets/office/patch-bag.png";
 import patchDumbbellsUrl from "../../assets/office/patch-dumbbells.png";
 import { TIMING } from "./timing";
 import { Rng } from "./rng";
-import { NavGrid, ellipseDist } from "./pathing";
+import { NavGrid } from "./pathing";
 import { Actor } from "./actor";
 import { loadAtlas, decodeImage } from "./atlas";
 import { Bubbles } from "./bubbles";
@@ -322,44 +322,6 @@ export class OfficeEngine {
       .map((o) => ({ x: o.x, y: o.y, r: TIMING.PERSONAL_SPACE * 1.1 }));
   }
 
-  /**
-   * Separation: someone inside personal space that `actor` must yield to.
-   * Anyone standing still ahead blocks; a higher-priority walker blocks
-   * unless it is clearly behind us (so side-by-side walkers fall in line
-   * instead of overlapping).
-   */
-  actorAhead(actor, nx, ny) {
-    for (const o of this.actors) {
-      if (o === actor || o.alpha < 0.5) continue;
-      const d = ellipseDist(actor.x, actor.y, o.x, o.y);
-      if (d > TIMING.PERSONAL_SPACE) continue;
-      const dot = ((o.x - actor.x) * nx + (o.y - actor.y) * ny) / (d || 1);
-      const oStill = Math.hypot(o.vx, o.vy) < 1;
-      if (oStill && dot > 0.25) return o;
-      // runners (huddle dash) pass each other; walkers fall in line
-      if (!oStill && actor.moveMode !== "run" && o.index < actor.index && dot > -0.5) return o;
-    }
-    return null;
-  }
-
-  /**
-   * A moving actor just ahead, heading the same way: followers slow down to
-   * fall in line (queue) instead of clumping. Never blocks, never deadlocks.
-   */
-  leaderAhead(actor, nx, ny) {
-    for (const o of this.actors) {
-      if (o === actor || o.alpha < 0.5) continue;
-      const sp = Math.hypot(o.vx, o.vy);
-      if (sp < 1) continue;
-      const d = ellipseDist(actor.x, actor.y, o.x, o.y);
-      if (d > TIMING.PERSONAL_SPACE * 1.6) continue;
-      const dot = ((o.x - actor.x) * nx + (o.y - actor.y) * ny) / (d || 1);
-      const same = (o.vx * nx + o.vy * ny) / sp;
-      if (dot > 0.6 && same > 0.5) return o;
-    }
-    return null;
-  }
-
   setScale(s, sceneW) {
     this.scale = s;
     this.sceneW = sceneW;
@@ -374,7 +336,14 @@ export class OfficeEngine {
   }
 
   setReducedMotion(on) {
+    if (this.reducedMotion === Boolean(on)) return;
     this.reducedMotion = Boolean(on);
+    if (this.reducedMotion) {
+      for (const actor of this.actors) {
+        if (actor.goal) this.fadeRelocate(actor, actor.goal, actor.travelToken, actor.onArrive);
+      }
+    }
+    this.bubbles.refreshText();
   }
 
   setDebug(on) {

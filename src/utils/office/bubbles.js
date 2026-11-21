@@ -65,8 +65,12 @@ export class Bubbles {
   updateText(b) {
     const { tx, reducedMotion } = this.engine;
     b.text = tx(b.source);
-    b.revealed = reducedMotion || b.kind === "rep" ? b.text.length : Math.min(b.text.length, Math.floor(b.t * TIMING.TYPE_CPS));
-    b.name.textContent = b.kind === "argue" || b.kind === "verdict" ? `${tx(b.actor.name.toUpperCase())}: ` : "";
+    b.revealed =
+      reducedMotion || b.kind === "rep"
+        ? b.text.length
+        : Math.min(b.text.length, Math.floor(b.t * TIMING.TYPE_CPS));
+    b.name.textContent =
+      b.kind === "argue" || b.kind === "verdict" ? `${tx(b.actor.name.toUpperCase())}: ` : "";
     b.on.textContent = b.text.slice(0, b.revealed);
     b.off.textContent = b.text.slice(b.revealed);
     b.width = b.el.offsetWidth;

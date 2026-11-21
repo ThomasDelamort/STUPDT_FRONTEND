@@ -165,7 +165,7 @@ export const OFFICE_SPOTS = {
   ppL2b: { x: 992, y: 466, face: 1 },
   ppR2a: { x: 1404, y: 418, face: -1 },
   ppR2b: { x: 1440, y: 476, face: -1 },
-  couch0: { x: 300, y: 742, approach: { x: 524, y: 780 }, view: "front", behind: "couchFront" },
+  couch0: { x: 300, y: 750, approach: { x: 524, y: 790 }, view: "front", behind: "couchFront" },
   couch1: { x: 412, y: 738, approach: { x: 556, y: 806 }, view: "front", behind: "couchFront" },
   couch2: { x: 530, y: 722, approach: { x: 590, y: 780 }, view: "front", behind: "couchFront" },
   couch3: { x: 640, y: 712, approach: { x: 620, y: 806 }, view: "front", behind: "couchFront" },

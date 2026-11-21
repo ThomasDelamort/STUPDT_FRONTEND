@@ -25,9 +25,9 @@ All durations and speeds live in `src/utils/office/timing.js`.
 - **Office image name.** The file was `Neon Gamer Lounge and City Nightscape.png` (with spaces). It is stored under the brief's name, `art/source/Neon_Gamer_Lounge_and_City_Nightscape.png`. Only the WebP (219 KB) ships in `src/assets/office/`; the 2 MB PNG master stays in `art/source` so it isn't committed twice.
 - **Extra characters.** Two more sheets were attached: a fedora suit and a voxel fedora suit. They go through the same pipeline and sit in the roster as `suit` / `suitvoxel` with `enabled: false`, next to `nimrod`. Enabling any of them is a one-line change. Their baked ground shadows are only partly removed (see limitations).
 - **Atlas format.** The brief's JSON shape is kept (`frames{x,y,w,h,pivot}`, `animations`, `views`, `anchors`). Every frame is a **uniform cell with one shared pivot**, so a frame change is a single `background-position` write and never a width or height change. `trim` (the drawn rect inside the cell) and `metrics` were added.
-- **Reply timing vs. a visible argument.** Offline replies land about 1 s after the prompt, before anyone reaches the huddle. A verdict at that moment would leave nothing to watch in the zero-setup demo. So a reply that arrives early waits until at least 3 actors are in the huddle and `TIMING.VERDICT_MIN_BEATS` (2) arc beats have been spoken. Slow replies (live Gemini) just end the stalling loop. With an offline reply the verdict lands about 7–9 s after the prompt, and idle resumes 4 s after the verdict.
+- **Reply timing.** The first speaker quotes the ticket while colleagues are still gathering. A reply lets the current speaker finish within a 2.4-second simulation deadline. The department verdict stays up for 2.4 seconds, followed by 1.5 seconds before the director starts a fresh scene.
 - **Second prompt mid-argument.** The chat input is disabled while a transfer is running, so a real second prompt usually lands after the reply (verdict or disperse phase). Either way the staff stay put: the response is an "Another one?!" beat, a second ticket on the pile, and a new arc for the new topic. Prompts that arrive during Code Red are queued.
-- **No reply at all.** If the Grand Finale modal is closed with Esc, no reply ever comes. After `REPLY_TIMEOUT` (30 s) the verdict goes to "the Feedback Department".
+- **Slow replies and cancelled tickets.** A pending chat request keeps its huddle through long transfers. Staff use numbered addenda after exhausting their stall lines. Dismissing the Grand Finale with Escape sends the cast back to work. Choosing a department preserves the huddle until its transfer reply arrives.
 - **Debug gating.** The overlay is on with `?office-debug` in any build. In dev it can also be toggled with the backtick key or the bug button in the card header. Both are compiled out of production (`import.meta.env.DEV`). `window.__office` and the `timeScale` fast-forward exist only in debug sessions, for automated QA.
 - **z-index.** The scene container uses `isolation: isolate`, so sprite and occluder z-indexes (`feetY*2` and `sortY*2+1`) never reach the page's stacking order. The only element outside the scene is the offscreen chip, at `z-30` (below the sign-language widget at 40 and the toast at 50). Sprites also write `z-index`, but only when their feet cross a 1 px row. That is the y-sort; everything else is `transform`, `opacity` or `background-position`.
 
@@ -66,26 +66,26 @@ All values are world px and were checked with `?office-debug` and with `nav` and
 ## Motion
 
 - **Walk cycles barely travel.** The generated cycles are nearly in place: a planted foot drifts only 8–35 sheet px per cycle, so a truly skate-free speed would be about 20 px/s. Animation fps is therefore derived from speed so the leg cadence matches the leg spread (`WALK_CYCLE_PX` 92, `RUN_CYCLE_PX` 190). The phase never resets on turns. Dedicated stride frames are on the wishlist.
-- **Separation.** Walkers yield to anyone standing still and fall in line behind someone going the same way (they slow down rather than stop). After a while they replan; a lower-priority actor side-steps; and as a last resort an actor stuck behind a parked one "ghosts" past for 1.4 s instead of freezing. Runners on the huddle dash pass each other.
+- **Separation.** Every proposed step checks the other three footprints, including on a run. A blocked actor tries a sidestep and periodically requests a new route. Scripted chair and bar transitions allow a short detour alongside their entry path.
 - **Sprints.** Long dashes sprint (up to +45%), so far-away staff still make the huddle.
-- **Teleport guard.** Any step faster than 1.8× run speed increments `debugStats.teleports`. Fade relocations in reduced-motion mode are exempt.
+- **Speed limit.** Direct movement, perspective scaling and sprinting share a 420 world-pixel/second ceiling. A step exceeding that ceiling increments `debugStats.teleports`. Reduced-motion relocations use a fade.
 
 ## Acceptance checks (how they were verified)
 
-Automated with headless Chrome (puppeteer-core) against the dev server, plus `?office-debug` and the `window.__office` handle.
+The original sprite measurements used Puppeteer. The current scene and chat checks used local Chromium with Playwright at 1440×900 and 390×844. Huddle timings use simulation seconds. Activity coverage uses accelerated fixed steps.
 
 | Criterion                          | Result                                                                                |
 | ---------------------------------- | ------------------------------------------------------------------------------------- |
-| 60 s idle: ≥ 6 activities          | 6–7 in 4 of 4 runs (the opening scene is a 3+-activity scene)                         |
-| All 9 activities within 5 min      | All 9 by ~90 s of sim time (5-minute accelerated watch)                               |
+| First idle minute | Six or seven activities across the latest two runs. Group activities count once the entire group is in position. |
+| Five-minute activity coverage | Both runs included all nine activities. |
 | No teleports                       | 0 in every run (idle watches, huddles, Code Red, reduced motion)                      |
-| No standing overlaps               | 0 still-overlap samples. Passing walkers overlap briefly (<0.5% of samples)           |
+| Actor separation | The four footprints stayed at least 54 perspective-adjusted world pixels apart over ten simulated minutes at each viewport size. |
 | Stopped within 400 ms              | All four switch to startle on the first sim step (0–200 ms stagger)                   |
 | First bubble ≤ 1.2 s after startle | 0.93–1.05 s after the send                                                            |
-| Huddle within ~3.5 s               | 2.1–3.9 s typically; ~4.6 s from the couch summit (foreground cul-de-sac, see above)  |
-| Verdict → idle                     | idle resumes 3.9–4.0 s after the verdict                                              |
+| Huddle arrival | Typically about 1.6–3.2 seconds in the nine-scene sweep. The foreground couch route took about four seconds. |
+| Reply and dispersal | The verdict appeared within 2.44 seconds of a fast or delayed reply. The idle director resumed 3.9 seconds after the verdict. |
 | No line repeats across 5 prompts   | 0 repeats (5 identical prompts, and a mixed sliding window)                           |
-| ≥ 60 lines, ≤ 60 chars             | 159 argument lines + 35 ambient (≤ 3 words), none over 60 chars with worst-case slots |
+| Dialogue length | More than 150 authored argument lines. The worst-case placeholder length check passed. |
 | StrictMode                         | 4 sprites, 1 sprite layer, exactly 60 rAF callbacks/s                                 |
 | Perf                               | 0.1–0.3 ms JS per frame at 60 fps                                                     |
 | Memory                             | DOM nodes flat (~513) over 10 sim-minutes, heap within GC noise                       |
@@ -96,7 +96,7 @@ Automated with headless Chrome (puppeteer-core) against the dev server, plus `?o
 
 ## Known limitations
 
-- **Couch summit.** From the couch, the huddle forms in about 4.6 s rather than 3.5 s, because the only way out is through the foreground.
+- **Couch summit.** The route from the couch goes around the foreground chess furniture. Gathering can take about four seconds from those seats.
 - **Skating feet.** Walking feet skate a little, which is inherent to the near-in-place cycles (see Motion).
 - **Fake poses.** Sitting, typing, pull-ups and similar are faked from the existing frames (`OFFICE_POSES`). `docs/OFFICE_ART_WISHLIST.md` lists the frames that would replace them with data-only changes.
 - **Suit shadows.** The two disabled suit characters keep part of their baked ground shadows in some frames.

@@ -117,9 +117,9 @@ Under the chat there is a live, sprite-animated break room with four staffers, *
 
 **Send a message and they drop everything.** Everyone startles, runs to a huddle and **argues about your message** in speech bubbles: the Blame Game, Ticket Hot Potato, Rock-Paper-Scissors for who has to answer, a Vote, or Neal opening The Laptop. The argument is picked by your prompt's text, so the same prompt gets the same arc. Once the real reply lands they deliver a verdict that blames the responding department, then wander back to doing nothing. Send another prompt mid-argument and you get _"Another one?!"_ and a bigger ticket pile. Trigger the Grand Finale and it's **Code Red**.
 
-- Works offline with zero setup and makes no extra API calls. Every line is deterministic, and none repeats within 5 prompts.
+- The staff quote the incoming ticket while they gather. Fast replies bring a department verdict within about 2.5 seconds. During a long transfer the committee keeps talking. The Office runs locally and makes no extra API calls.
 - Accessibility: the bubbles are mirrored in a caption strip (`aria-live`). It respects Braille mode, mute, dark/light themes and `prefers-reduced-motion`. If the office is off-screen when you send, a chip offers to scroll to it (it never auto-scrolls).
-- Add `?office-debug` to the URL for the QA overlay: the nav mesh, occluders, paths and pivots, FPS, hotkeys `1–9` / `H` / `R` / `C`, and an in-place animation player.
+- Add `?office-debug` to see station anchors, furniture boundaries, planned paths and sprite pivots. The controls and in-place animation player sit below the feed. Press `1–9` to force a scene, `H` for a prompt, `R` for a reply or `C` for Code Red.
 - Design notes, calibration and the acceptance checks are in [`docs/OFFICE_NOTES.md`](docs/OFFICE_NOTES.md). The frames that would replace the faked poses are in [`docs/OFFICE_ART_WISHLIST.md`](docs/OFFICE_ART_WISHLIST.md).
 
 ### 📊 Live chaos telemetry
