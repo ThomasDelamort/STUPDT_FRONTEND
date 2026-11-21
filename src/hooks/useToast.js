@@ -1,4 +1,4 @@
-import { useStuPDT } from '../contexts/StuPDTContext';
+import { useStuPDT } from "../contexts/useStuPDT";
 
 export function useToast() {
   const { toastNotification, triggerToast } = useStuPDT();

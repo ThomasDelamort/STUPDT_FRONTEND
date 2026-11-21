@@ -1,4 +1,4 @@
-import { useStuPDT } from '../contexts/StuPDTContext';
+import { useStuPDT } from "../contexts/useStuPDT";
 
 export function useMetrics() {
   const {
@@ -9,7 +9,7 @@ export function useMetrics() {
     chaosMeter,
     bumpMetrics,
     isPremiumVIP,
-    setIsPremiumVIP
+    setIsPremiumVIP,
   } = useStuPDT();
 
   return {
@@ -20,6 +20,6 @@ export function useMetrics() {
     chaosMeter,
     bumpMetrics,
     isPremiumVIP,
-    setIsPremiumVIP
+    setIsPremiumVIP,
   };
 }

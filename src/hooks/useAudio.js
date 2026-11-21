@@ -1,4 +1,4 @@
-import { useStuPDT } from '../contexts/StuPDTContext';
+import { useStuPDT } from "../contexts/useStuPDT";
 
 export function useAudio() {
   const { isMuted, toggleMute, soundFX } = useStuPDT();

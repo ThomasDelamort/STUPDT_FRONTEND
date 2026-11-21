@@ -1,6 +1,6 @@
-import React from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { useStuPDT } from '../../contexts/StuPDTContext';
+import React from "react";
+import { AlertTriangle } from "lucide-react";
+import { useStuPDT } from "../../contexts/useStuPDT";
 
 export function EmergencyBanner() {
   const { chaosMeter, tx } = useStuPDT();
@@ -12,7 +12,9 @@ export function EmergencyBanner() {
       <p className="text-xs sm:text-sm font-black tracking-wide flex items-center justify-center gap-2">
         <AlertTriangle className="w-4 h-4 shrink-0 animate-bounce" />
         <span>
-          {tx('NATIONAL BUREAUCRATIC EMERGENCY (100% CHAOS): ALL 17 AI DEPARTMENTS HAVE ENTERED PANIC SYNERGY MODE!')}
+          {tx(
+            "NATIONAL BUREAUCRATIC EMERGENCY (100% CHAOS): ALL 17 AI DEPARTMENTS HAVE ENTERED PANIC SYNERGY MODE!",
+          )}
         </span>
       </p>
     </div>

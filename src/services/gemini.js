@@ -1,23 +1,12 @@
-import { getOfflineDepartmentReply } from './offlineReplies';
-import { API_BASE_URL } from './apiClient';
-
-const DEFAULT_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-3-flash-preview';
-
-const VISION_PROMPT = `You are StuPDT Vision™, a hilariously unhelpful, tautological AI image detector.
-Look at the main object, food, or drink in this image and return STRICT JSON:
-- detectedItem: short 1-2 word name of the main thing (e.g., "Rock", "Spaghetti", "Pizza", "Laptop", "Cat")
-- category: corporate category (e.g., "Geological Object", "Culinary Dish", "Physical Thing")
-- confidence: always "100.00%"
-- verdict: deadpan corporate sentence saying you are 100% confident that this [detectedItem] is indeed a [detectedItem], adding zero useful information.
-- ingredients: array with ONLY ONE STRING which is literally just the detectedItem itself! (e.g., for spaghetti -> ["Spaghetti"], for pizza -> ["Pizza"], for rock -> ["Rock (100%)"]).
-- proTip: a hilariously obvious tautological tip about the item.`;
+import { getOfflineDepartmentReply } from "./offlineReplies";
+import { API_BASE_URL } from "./apiClient";
 
 async function fetchJsonWithRetry(url, body, retries = 2, delay = 800) {
   try {
     const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
 
     // Fail fast on 404/405/401/403 so unconfigured or local Vite setups fall back immediately
@@ -39,34 +28,23 @@ async function fetchJsonWithRetry(url, body, retries = 2, delay = 800) {
 }
 
 export async function generateDysfunctionalAIResponse(userText, targetDept) {
-  const clientApiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-  const systemPrompt = `${targetDept.systemPrompt}
+  const systemPrompt = `${targetDept.systemPrompt || ""}
 RULES:
 1. Never solve the user's problem.
 2. Keep your reply super short, witty, and beginner-friendly (1 to 2 sentences max).
 3. Sound confident, corporate, and hilariously unhelpful.`;
 
-  let data = null;
-
-  if (clientApiKey) {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent?key=${clientApiKey}`;
-    data = await fetchJsonWithRetry(apiUrl, {
-      contents: [{ parts: [{ text: `User says: "${userText}"` }] }],
-      systemInstruction: { parts: [{ text: systemPrompt }] }
-    });
-  } else {
-    // Use the backend/Vercel serverless proxy if GEMINI_API_KEY is configured
-    data = await fetchJsonWithRetry(
-      `${API_BASE_URL}/api/gemini`,
-      {
-        mode: 'chat',
-        userText,
-        systemPrompt
-      },
-      1,
-      600
-    );
-  }
+  // Always route securely through the backend proxy
+  const data = await fetchJsonWithRetry(
+    `${API_BASE_URL}/api/gemini`,
+    {
+      mode: "chat",
+      userText,
+      systemPrompt,
+    },
+    1,
+    600,
+  );
 
   const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (candidateText && candidateText.trim().length > 4) {
@@ -77,62 +55,22 @@ RULES:
 }
 
 export async function analyzeImageWithStuPDTVision(base64Data, mimeType) {
-  const clientApiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-  let data = null;
-
-  if (clientApiKey) {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent?key=${clientApiKey}`;
-    data = await fetchJsonWithRetry(apiUrl, {
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: VISION_PROMPT },
-            {
-              inlineData: {
-                mimeType,
-                data: base64Data
-              }
-            }
-          ]
-        }
-      ],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'OBJECT',
-          properties: {
-            detectedItem: { type: 'STRING' },
-            category: { type: 'STRING' },
-            confidence: { type: 'STRING' },
-            verdict: { type: 'STRING' },
-            ingredients: {
-              type: 'ARRAY',
-              items: { type: 'STRING' }
-            },
-            proTip: { type: 'STRING' }
-          },
-          required: ['detectedItem', 'category', 'confidence', 'verdict', 'ingredients', 'proTip']
-        }
-      }
-    });
-  } else {
-    data = await fetchJsonWithRetry(
-      `${API_BASE_URL}/api/gemini`,
-      {
-        mode: 'vision',
-        mimeType,
-        base64Data
-      },
-      1,
-      600
-    );
-  }
+  // Always route securely through the backend proxy
+  const data = await fetchJsonWithRetry(
+    `${API_BASE_URL}/api/gemini`,
+    {
+      mode: "vision",
+      mimeType,
+      base64Data,
+    },
+    1,
+    600,
+  );
 
   try {
     const rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawJson) return null;
-    return JSON.parse(rawJson);
+    return typeof rawJson === "string" ? JSON.parse(rawJson) : rawJson;
   } catch {
     return null;
   }

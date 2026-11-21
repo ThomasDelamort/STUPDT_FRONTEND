@@ -1,13 +1,13 @@
-import { apiFetch } from './apiClient';
+import { apiFetch } from "./apiClient";
 
 /**
  * Sync telemetry & metrics with backend
  */
 export async function syncTelemetryMetrics(metrics) {
   try {
-    const res = await apiFetch('/api/metrics', {
-      method: 'POST',
-      body: JSON.stringify(metrics)
+    const res = await apiFetch("/api/metrics", {
+      method: "POST",
+      body: JSON.stringify(metrics),
     });
 
     if (res.ok && res.data) {
@@ -24,7 +24,7 @@ export async function syncTelemetryMetrics(metrics) {
  */
 export async function fetchGlobalMetrics() {
   try {
-    const res = await apiFetch('/api/metrics', { method: 'GET' });
+    const res = await apiFetch("/api/metrics", { method: "GET" });
     if (res.ok && res.data) {
       return res.data;
     }

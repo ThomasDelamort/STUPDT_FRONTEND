@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Sun,
   Moon,
@@ -11,10 +11,10 @@ import {
   VolumeX,
   Crown,
   Folder,
-  X
-} from 'lucide-react';
-import { RetroDarkLogo } from '../common/RetroDarkLogo';
-import { useStuPDT } from '../../contexts/StuPDTContext';
+  X,
+} from "lucide-react";
+import { RetroDarkLogo } from "../common/RetroDarkLogo";
+import { useStuPDT } from "../../contexts/useStuPDT";
 
 export function Header({ onThemeClick }) {
   const {
@@ -29,7 +29,7 @@ export function Header({ onThemeClick }) {
     soundFX,
     triggerToast,
     setActiveModal,
-    tx
+    tx,
   } = useStuPDT();
 
   if (isDarkMode) {
@@ -41,13 +41,13 @@ export function Header({ onThemeClick }) {
             {/* Top-left stacked MALFUNCTION / 2026 */}
             <div className="leading-none select-none">
               <div className="text-sm sm:text-base font-black tracking-wider text-white uppercase">
-                {tx('MALFUNCTION')}
+                {tx("MALFUNCTION")}
               </div>
               <div className="text-sm sm:text-base font-black tracking-wider text-white/90 flex items-center gap-2">
-                <span>{tx('2026')}</span>
+                <span>{tx("2026")}</span>
                 {isPremiumVIP && (
                   <span className="text-[10px] px-2 py-0.5 rounded bg-[#FFE600] text-[#08080A] font-black flex items-center gap-1">
-                    <Crown className="w-3 h-3" /> {tx('₱999 VIP')}
+                    <Crown className="w-3 h-3" /> {tx("₱999 VIP")}
                   </span>
                 )}
               </div>
@@ -59,13 +59,13 @@ export function Header({ onThemeClick }) {
               <button
                 onClick={() => {
                   soundFX.playChime();
-                  setActiveModal('org_about');
+                  setActiveModal("org_about");
                 }}
                 title="About StuPDT & Corporate Org Chart"
                 className="w-9 h-8 rounded-full bg-white hover:scale-105 transition-transform flex items-center justify-center shadow-[0_0_12px_rgba(255,255,255,0.25)] relative cursor-pointer"
               >
                 <span className="font-serif font-black text-lg text-blue-700 leading-none">
-                  {tx('i')}
+                  {tx("i")}
                 </span>
                 <span className="w-2 h-2 bg-white rotate-45 absolute -bottom-0.5 right-2" />
               </button>
@@ -74,7 +74,7 @@ export function Header({ onThemeClick }) {
               <button
                 onClick={() => {
                   soundFX.playRubberStamp();
-                  setActiveModal('bureaucracy');
+                  setActiveModal("bureaucracy");
                 }}
                 title="Open Form 001 Bureaucracy Simulator"
                 className="w-9 h-8 rounded-md bg-[#F0E161] hover:scale-105 transition-transform border-2 border-[#08080A] flex items-center justify-center shadow-[0_0_12px_rgba(240,225,97,0.25)] cursor-pointer relative"
@@ -87,7 +87,7 @@ export function Header({ onThemeClick }) {
                 onClick={() => {
                   soundFX.playErrorBuzz();
                   triggerToast(
-                    'Close Denied: Please submit Departure Form 999-B to the Exit Committee first.'
+                    "Close Denied: Please submit Departure Form 999-B to the Exit Committee first.",
                   );
                 }}
                 title="Attempt to Close StuPDT"
@@ -102,7 +102,7 @@ export function Header({ onThemeClick }) {
           <div className="mt-2 mb-4 text-center flex flex-col items-center">
             <RetroDarkLogo brailleMode={brailleMode} />
             <p className="mt-2 text-sm sm:text-base font-semibold tracking-wide text-white/95">
-              {tx('Stupid. Fast. Wrong.')}
+              {tx("Stupid. Fast. Wrong.")}
             </p>
           </div>
 
@@ -113,18 +113,18 @@ export function Header({ onThemeClick }) {
               className="px-3 py-1.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#0EC7F5]/60 text-[#0EC7F5] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
             >
               <Sun className="w-3.5 h-3.5" />
-              <span>{tx('Switch to Light Mode')}</span>
+              <span>{tx("Switch to Light Mode")}</span>
             </button>
 
             <button
               onClick={() => {
                 soundFX.playScanBeep();
-                setActiveModal('vision');
+                setActiveModal("vision");
               }}
               className="px-3 py-1.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#1FE03F]/60 text-[#1FE03F] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
             >
               <Camera className="w-3.5 h-3.5" />
-              <span>{tx('Vision AI')}</span>
+              <span>{tx("Vision AI")}</span>
             </button>
 
             <button
@@ -134,12 +134,12 @@ export function Header({ onThemeClick }) {
               }}
               className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
                 brailleMode
-                  ? 'bg-[#FFE600] text-[#08080A] border-[#FFE600]'
-                  : 'bg-[#181820] hover:bg-[#23232F] border-[#FF6B1A]/60 text-[#FF6B1A]'
+                  ? "bg-[#FFE600] text-[#08080A] border-[#FFE600]"
+                  : "bg-[#181820] hover:bg-[#23232F] border-[#FF6B1A]/60 text-[#FF6B1A]"
               }`}
             >
               <EyeOff className="w-3.5 h-3.5" />
-              <span>{tx('Braille (Blind)')}</span>
+              <span>{tx("Braille (Blind)")}</span>
             </button>
 
             <button
@@ -149,36 +149,40 @@ export function Header({ onThemeClick }) {
               }}
               className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
                 signLanguageMode
-                  ? 'bg-[#F52820] text-white border-[#F52820]'
-                  : 'bg-[#181820] hover:bg-[#23232F] border-[#F52820]/60 text-[#F52820]'
+                  ? "bg-[#F52820] text-white border-[#F52820]"
+                  : "bg-[#181820] hover:bg-[#23232F] border-[#F52820]/60 text-[#F52820]"
               }`}
             >
               <Hand className="w-3.5 h-3.5" />
-              <span>{tx('Sign Language (Blind)')}</span>
+              <span>{tx("Sign Language (Blind)")}</span>
             </button>
 
             <button
-              onClick={() => setActiveModal('toolkit')}
+              onClick={() => setActiveModal("toolkit")}
               className="px-3 py-1.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#2A2A35] text-slate-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#F5E9D8]" />
-              <span>{tx('Useless Toolkit')}</span>
+              <span>{tx("Useless Toolkit")}</span>
             </button>
 
             <button
-              onClick={() => setActiveModal('report')}
+              onClick={() => setActiveModal("report")}
               className="px-3 py-1.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#2A2A35] text-slate-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
             >
               <BarChart3 className="w-3.5 h-3.5 text-[#0EC7F5]" />
-              <span>{tx('Report')}</span>
+              <span>{tx("Report")}</span>
             </button>
 
             <button
               onClick={toggleMute}
-              title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+              title={isMuted ? "Unmute Sound" : "Mute Sound"}
               className="p-1.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#2A2A35] text-slate-300 cursor-pointer"
             >
-              {isMuted ? <VolumeX className="w-4 h-4 text-[#F52820]" /> : <Volume2 className="w-4 h-4 text-[#1FE03F]" />}
+              {isMuted ? (
+                <VolumeX className="w-4 h-4 text-[#F52820]" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-[#1FE03F]" />
+              )}
             </button>
           </div>
         </div>
@@ -191,17 +195,17 @@ export function Header({ onThemeClick }) {
     <header className="relative bg-[#3888F2] border-b-4 border-[#071638] overflow-hidden shadow-md">
       <div
         className="hidden md:block absolute inset-y-0 right-0 w-[52%] bg-white pointer-events-none"
-        style={{ clipPath: 'polygon(22% 0, 100% 0, 100% 100%, 0% 100%)' }}
+        style={{ clipPath: "polygon(22% 0, 100% 0, 100% 100%, 0% 100%)" }}
       />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 pt-3 pb-4">
         <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b-2 border-[#071638]/15">
           <div className="flex items-center gap-2">
             <span className="font-black tracking-tighter text-base text-[#071638] uppercase">
-              {tx('STUPDT CORP')}
+              {tx("STUPDT CORP")}
             </span>
             <span className="text-[11px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#FFE600] text-[#071638] border-2 border-[#071638]">
-              {tx('MALFUNCTION 2026')}
+              {tx("MALFUNCTION 2026")}
             </span>
           </div>
 
@@ -211,17 +215,17 @@ export function Header({ onThemeClick }) {
               className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-[#071638] text-[#FFE600] flex items-center gap-1 cursor-pointer"
             >
               <Moon className="w-3.5 h-3.5" />
-              <span>{tx('Switch to Dark Mode')}</span>
+              <span>{tx("Switch to Dark Mode")}</span>
             </button>
             <button
               onClick={() => {
                 soundFX.playScanBeep();
-                setActiveModal('vision');
+                setActiveModal("vision");
               }}
               className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-[#FFE600] text-[#071638] border-2 border-[#071638] flex items-center gap-1 cursor-pointer"
             >
               <Camera className="w-3.5 h-3.5" />
-              <span>{tx('Vision AI')}</span>
+              <span>{tx("Vision AI")}</span>
             </button>
             <button
               onClick={() => {
@@ -231,7 +235,7 @@ export function Header({ onThemeClick }) {
               className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-white text-[#071638] border-2 border-[#071638] flex items-center gap-1 cursor-pointer"
             >
               <EyeOff className="w-3.5 h-3.5" />
-              <span>{tx('Braille (Blind)')}</span>
+              <span>{tx("Braille (Blind)")}</span>
             </button>
             <button
               onClick={() => {
@@ -241,25 +245,29 @@ export function Header({ onThemeClick }) {
               className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-white text-[#071638] border-2 border-[#071638] flex items-center gap-1 cursor-pointer"
             >
               <Hand className="w-3.5 h-3.5" />
-              <span>{tx('Sign Language (Blind)')}</span>
+              <span>{tx("Sign Language (Blind)")}</span>
             </button>
             <button
-              onClick={() => setActiveModal('toolkit')}
+              onClick={() => setActiveModal("toolkit")}
               className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-white text-[#071638] border-2 border-[#071638] cursor-pointer"
             >
-              {tx('Toolkit')}
+              {tx("Toolkit")}
             </button>
             <button
-              onClick={() => setActiveModal('report')}
+              onClick={() => setActiveModal("report")}
               className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-[#071638] text-white cursor-pointer"
             >
-              {tx('Report')}
+              {tx("Report")}
             </button>
             <button
               onClick={toggleMute}
               className="p-1.5 rounded-lg bg-white text-[#071638] border-2 border-[#071638] cursor-pointer"
             >
-              {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-600" /> : <Volume2 className="w-3.5 h-3.5" />}
+              {isMuted ? (
+                <VolumeX className="w-3.5 h-3.5 text-rose-600" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5" />
+              )}
             </button>
           </div>
         </div>
@@ -269,29 +277,29 @@ export function Header({ onThemeClick }) {
             <div className="inline-flex items-center select-none leading-none">
               <span
                 className="text-5xl sm:text-7xl font-black tracking-tighter text-[#FFE600]"
-                style={{ WebkitTextStroke: '2.5px #071638', textShadow: '4px 4px 0px #071638' }}
+                style={{ WebkitTextStroke: "2.5px #071638", textShadow: "4px 4px 0px #071638" }}
               >
-                {tx('STU')}
+                {tx("STU")}
               </span>
               <span
                 className="text-5xl sm:text-7xl font-black tracking-tighter text-[#071638] bg-white px-2.5 py-0.5 rounded-xl border-2 border-[#071638] ml-1"
-                style={{ boxShadow: '4px 4px 0px #FFE600' }}
+                style={{ boxShadow: "4px 4px 0px #FFE600" }}
               >
-                {tx('PDT')}
+                {tx("PDT")}
               </span>
             </div>
             <p className="mt-2 text-xs sm:text-sm font-extrabold uppercase tracking-wide text-white drop-shadow-[0_1px_2px_rgba(7,22,56,0.85)]">
-              {tx('Stupid. Fast. Wrong. • Alpine Illumination Permit Approved')}
+              {tx("Stupid. Fast. Wrong. • Alpine Illumination Permit Approved")}
             </p>
           </div>
 
           <button
-            onClick={() => setActiveModal('report')}
+            onClick={() => setActiveModal("report")}
             className="self-start sm:self-center shrink-0 w-24 h-24 rounded-full bg-[#FFE600] hover:scale-105 transition-transform border-2 border-[#071638] shadow-[4px_4px_0px_#071638] flex flex-col items-center justify-center text-center p-2 cursor-pointer -rotate-6"
           >
-            <span className="text-xl font-black leading-none text-[#071638]">{tx('0%')}</span>
+            <span className="text-xl font-black leading-none text-[#071638]">{tx("0%")}</span>
             <span className="text-[10px] font-black uppercase tracking-tighter text-[#071638] leading-tight mt-0.5">
-              {tx('PROBLEMS SOLVED')}
+              {tx("PROBLEMS SOLVED")}
             </span>
           </button>
         </div>

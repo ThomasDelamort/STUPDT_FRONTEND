@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { toBraille } from '../utils/braille';
-import { soundFX } from '../utils/soundEngine';
-import { checkBackendHealth } from '../services/apiClient';
-
-const StuPDTContext = createContext(null);
+import React, { useState, useEffect, useCallback } from "react";
+import { StuPDTContext } from "./StuPDTContextInstance";
+import { toBraille } from "../utils/braille";
+import { soundFX } from "../utils/soundEngine";
+import { checkBackendHealth, fetchDepartments, fetchQuotes } from "../services/apiClient";
+import { syncTelemetryMetrics, fetchGlobalMetrics } from "../services/telemetryService";
+import { DEPARTMENTS, STUPID_QUOTES } from "../constants";
 
 const STORAGE_KEYS = {
-  METRICS: 'stupdt_telemetry_metrics',
-  VIP: 'stupdt_is_vip'
+  METRICS: "stupdt_telemetry_metrics",
+  VIP: "stupdt_is_vip",
 };
 
 function getStoredJson(key, fallback) {
@@ -34,10 +35,7 @@ export function StuPDTProvider({ children }) {
   const [signLanguageMode, setSignLanguageMode] = useState(false);
 
   // Translation helper: turns visible text to Braille when Braille Mode is ON
-  const tx = useCallback(
-    (text) => (brailleMode ? toBraille(text) : text),
-    [brailleMode]
-  );
+  const tx = useCallback((text) => (brailleMode ? toBraille(text) : text), [brailleMode]);
 
   // Sound Engine
   const [isMuted, setIsMuted] = useState(false);
@@ -50,17 +48,9 @@ export function StuPDTProvider({ children }) {
   }, []);
 
   // Backend Health Status: 'checking' | 'connected' | 'offline'
-  const [backendStatus, setBackendStatus] = useState('checking');
-
-  const refreshBackendStatus = useCallback(async () => {
-    setBackendStatus('checking');
-    const health = await checkBackendHealth();
-    setBackendStatus(health.online ? 'connected' : 'offline');
-  }, []);
-
-  useEffect(() => {
-    refreshBackendStatus();
-  }, [refreshBackendStatus]);
+  const [backendStatus, setBackendStatus] = useState("checking");
+  const [departments, setDepartments] = useState(DEPARTMENTS);
+  const [quotes, setQuotes] = useState(STUPID_QUOTES);
 
   // Telemetry Metrics with Session Storage Persistence
   const defaultMetrics = {
@@ -68,51 +58,116 @@ export function StuPDTProvider({ children }) {
     internalMeetings: 14,
     minutesWasted: 6,
     userSatisfaction: -18,
-    chaosMeter: 15
+    chaosMeter: 15,
   };
 
   const storedMetrics = getStoredJson(STORAGE_KEYS.METRICS, null);
   const initialMetrics = { ...defaultMetrics, ...(storedMetrics || {}) };
 
   const [specialistsConsulted, setSpecialistsConsulted] = useState(
-    typeof initialMetrics.specialistsConsulted === 'number'
-      ? initialMetrics.specialistsConsulted
-      : defaultMetrics.specialistsConsulted
+    Number(initialMetrics.specialistsConsulted) || 1,
   );
   const [internalMeetings, setInternalMeetings] = useState(
-    typeof initialMetrics.internalMeetings === 'number'
-      ? initialMetrics.internalMeetings
-      : defaultMetrics.internalMeetings
+    Number(initialMetrics.internalMeetings) || 14,
   );
-  const [minutesWasted, setMinutesWasted] = useState(
-    typeof initialMetrics.minutesWasted === 'number'
-      ? initialMetrics.minutesWasted
-      : defaultMetrics.minutesWasted
-  );
+  const [minutesWasted, setMinutesWasted] = useState(Number(initialMetrics.minutesWasted) || 6);
   const [userSatisfaction, setUserSatisfaction] = useState(
-    typeof initialMetrics.userSatisfaction === 'number'
-      ? initialMetrics.userSatisfaction
-      : defaultMetrics.userSatisfaction
+    Number(initialMetrics.userSatisfaction) || -18,
   );
-  const [chaosMeter, setChaosMeter] = useState(
-    typeof initialMetrics.chaosMeter === 'number'
-      ? initialMetrics.chaosMeter
-      : defaultMetrics.chaosMeter
-  );
-  const [isPremiumVIP, setIsPremiumVIP] = useState(() =>
-    getStoredJson(STORAGE_KEYS.VIP, false)
-  );
+  const [chaosMeter, setChaosMeter] = useState(Number(initialMetrics.chaosMeter) || 15);
+  const [isPremiumVIP, setIsPremiumVIP] = useState(() => getStoredJson(STORAGE_KEYS.VIP, false));
 
-  // Save metrics to storage whenever they change
+  const refreshBackendStatus = useCallback(async () => {
+    setBackendStatus("checking");
+    const health = await checkBackendHealth();
+    if (health.online) {
+      setBackendStatus("connected");
+      const [remoteMetrics, remoteDepts, remoteQuotes] = await Promise.all([
+        fetchGlobalMetrics(),
+        fetchDepartments(),
+        fetchQuotes(),
+      ]);
+      if (remoteDepts && Array.isArray(remoteDepts) && remoteDepts.length > 0) {
+        setDepartments(remoteDepts);
+      }
+      if (remoteQuotes && Array.isArray(remoteQuotes) && remoteQuotes.length > 0) {
+        setQuotes(remoteQuotes);
+      }
+      if (remoteMetrics) {
+        if (typeof remoteMetrics.specialistsConsulted === "number")
+          setSpecialistsConsulted(remoteMetrics.specialistsConsulted);
+        if (typeof remoteMetrics.internalMeetings === "number")
+          setInternalMeetings(remoteMetrics.internalMeetings);
+        if (typeof remoteMetrics.minutesWasted === "number")
+          setMinutesWasted(remoteMetrics.minutesWasted);
+        if (typeof remoteMetrics.userSatisfaction === "number")
+          setUserSatisfaction(remoteMetrics.userSatisfaction);
+        if (typeof remoteMetrics.chaosMeter === "number") setChaosMeter(remoteMetrics.chaosMeter);
+      }
+    } else {
+      setBackendStatus("offline");
+    }
+  }, []);
+
   useEffect(() => {
-    setStoredJson(STORAGE_KEYS.METRICS, {
+    let isMounted = true;
+    void checkBackendHealth().then(async (health) => {
+      if (!isMounted) return;
+      if (health.online) {
+        setBackendStatus("connected");
+        const [remoteMetrics, remoteDepts, remoteQuotes] = await Promise.all([
+          fetchGlobalMetrics(),
+          fetchDepartments(),
+          fetchQuotes(),
+        ]);
+        if (!isMounted) return;
+        if (remoteDepts && Array.isArray(remoteDepts) && remoteDepts.length > 0) {
+          setDepartments(remoteDepts);
+        }
+        if (remoteQuotes && Array.isArray(remoteQuotes) && remoteQuotes.length > 0) {
+          setQuotes(remoteQuotes);
+        }
+        if (remoteMetrics) {
+          if (typeof remoteMetrics.specialistsConsulted === "number")
+            setSpecialistsConsulted(remoteMetrics.specialistsConsulted);
+          if (typeof remoteMetrics.internalMeetings === "number")
+            setInternalMeetings(remoteMetrics.internalMeetings);
+          if (typeof remoteMetrics.minutesWasted === "number")
+            setMinutesWasted(remoteMetrics.minutesWasted);
+          if (typeof remoteMetrics.userSatisfaction === "number")
+            setUserSatisfaction(remoteMetrics.userSatisfaction);
+          if (typeof remoteMetrics.chaosMeter === "number") setChaosMeter(remoteMetrics.chaosMeter);
+        }
+      } else {
+        setBackendStatus("offline");
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Save metrics to storage and sync with backend if online
+  useEffect(() => {
+    const currentMetrics = {
       specialistsConsulted,
       internalMeetings,
       minutesWasted,
       userSatisfaction,
-      chaosMeter
-    });
-  }, [specialistsConsulted, internalMeetings, minutesWasted, userSatisfaction, chaosMeter]);
+      chaosMeter,
+    };
+    setStoredJson(STORAGE_KEYS.METRICS, currentMetrics);
+    if (backendStatus === "connected") {
+      void syncTelemetryMetrics(currentMetrics);
+    }
+  }, [
+    specialistsConsulted,
+    internalMeetings,
+    minutesWasted,
+    userSatisfaction,
+    chaosMeter,
+    backendStatus,
+  ]);
 
   useEffect(() => {
     setStoredJson(STORAGE_KEYS.VIP, isPremiumVIP);
@@ -137,12 +192,12 @@ export function StuPDTProvider({ children }) {
         const next = Math.min(100, prev + extraChaos);
         if (next >= 100 && prev < 100) {
           soundFX.playKlaxon();
-          triggerToast('100% CHAOS REACHED: NATIONAL BUREAUCRATIC EMERGENCY DECLARED!');
+          triggerToast("100% CHAOS REACHED: NATIONAL BUREAUCRATIC EMERGENCY DECLARED!");
         }
         return next;
       });
     },
-    [triggerToast]
+    [triggerToast],
   );
 
   const resetMetrics = useCallback(() => {
@@ -154,7 +209,7 @@ export function StuPDTProvider({ children }) {
     setIsPremiumVIP(false);
     sessionStorage.removeItem(STORAGE_KEYS.METRICS);
     sessionStorage.removeItem(STORAGE_KEYS.VIP);
-    triggerToast('All bureaucracy metrics reset back to baseline chaos!');
+    triggerToast("All bureaucracy metrics reset back to baseline chaos!");
   }, [triggerToast]);
 
   // Active Modals
@@ -209,16 +264,10 @@ export function StuPDTProvider({ children }) {
     // Quotes
     quoteIdx,
     setQuoteIdx,
-    nextQuote
+    nextQuote,
+    quotes,
+    departments,
   };
 
   return <StuPDTContext.Provider value={value}>{children}</StuPDTContext.Provider>;
-}
-
-export function useStuPDT() {
-  const context = useContext(StuPDTContext);
-  if (!context) {
-    throw new Error('useStuPDT must be used within a StuPDTProvider');
-  }
-  return context;
 }

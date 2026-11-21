@@ -1,20 +1,22 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { StuPDTProvider, useStuPDT } from './contexts/StuPDTContext';
-import { DEPARTMENTS, CAPTCHA_TILES, LEGAL_MATH_PROBLEMS } from './constants';
-import { useChat } from './hooks/useChat';
-import { useVisionScan } from './hooks/useVisionScan';
+import React, { useState, useMemo, useEffect } from "react";
+import { StuPDTProvider } from "./contexts/StuPDTContext";
+import { useStuPDT } from "./contexts/useStuPDT";
+import { DEPARTMENTS, CAPTCHA_TILES, LEGAL_MATH_PROBLEMS } from "./constants";
+import { fetchCaptchaData } from "./services/apiClient";
+import { useChat } from "./hooks/useChat";
+import { useVisionScan } from "./hooks/useVisionScan";
 
 // Layout Components
-import { BrailleBanner } from './components/layout/BrailleBanner';
-import { EmergencyBanner } from './components/layout/EmergencyBanner';
-import { Header } from './components/layout/Header';
-import { QuoteBar } from './components/layout/QuoteBar';
-import { StatusPills } from './components/layout/StatusPills';
-import { ToastNotification } from './components/layout/ToastNotification';
+import { BrailleBanner } from "./components/layout/BrailleBanner";
+import { EmergencyBanner } from "./components/layout/EmergencyBanner";
+import { Header } from "./components/layout/Header";
+import { QuoteBar } from "./components/layout/QuoteBar";
+import { StatusPills } from "./components/layout/StatusPills";
+import { ToastNotification } from "./components/layout/ToastNotification";
 
 // Chat & Accessibility Components
-import { ChatWindow, QuickStarters } from './components/chat';
-import { SignLanguageWidget } from './components/accessibility/SignLanguageWidget';
+import { ChatWindow, QuickStarters } from "./components/chat";
+import { SignLanguageWidget } from "./components/accessibility/SignLanguageWidget";
 
 // Modal Components
 import {
@@ -27,8 +29,8 @@ import {
   EmotionalSupportModal,
   InfiniteLoadingModal,
   ReportModal,
-  GrandFinaleModal
-} from './components/modals';
+  GrandFinaleModal,
+} from "./components/modals";
 
 function StuPDTApp() {
   const {
@@ -38,7 +40,7 @@ function StuPDTApp() {
     triggerToast,
     bumpMetrics,
     activeModal,
-    setActiveModal
+    setActiveModal,
   } = useStuPDT();
 
   // Chat management
@@ -53,11 +55,12 @@ function StuPDTApp() {
     suggestedQuickReply,
     chatEndRef,
     performDepartmentTransfer,
-    handleSendMessage
+    handleSendMessage,
   } = useChat();
 
   // Vision scanner management
   const {
+    visionSamples,
     visionPreviewUrl,
     visionSampleId,
     visionScanning,
@@ -65,22 +68,33 @@ function StuPDTApp() {
     visionResult,
     runSampleVisionScan,
     handleImageFileUpload,
-    sendVisionResultToChat
+    sendVisionResultToChat,
   } = useVisionScan(addAiMessage);
 
   // Theme Gatekeeper State (Captcha -> Mandatory Legal Math)
   const [themeGateStep, setThemeGateStep] = useState(null);
+  const [captchaTiles, setCaptchaTiles] = useState(CAPTCHA_TILES);
+  const [legalMathProblems, setLegalMathProblems] = useState(LEGAL_MATH_PROBLEMS);
   const [selectedCaptchaIds, setSelectedCaptchaIds] = useState([]);
-  const [captchaError, setCaptchaError] = useState('');
+  const [captchaError, setCaptchaError] = useState("");
   const [activeMathProblem, setActiveMathProblem] = useState(LEGAL_MATH_PROBLEMS[0]);
-  const [mathInput, setMathInput] = useState('');
-  const [mathError, setMathError] = useState('');
+  const [mathInput, setMathInput] = useState("");
+  const [mathError, setMathError] = useState("");
   const [showMathHint, setShowMathHint] = useState(false);
+
+  // Load dynamic captcha puzzle from backend if available
+  useEffect(() => {
+    void fetchCaptchaData().then((data) => {
+      if (data?.tiles && Array.isArray(data.tiles)) setCaptchaTiles(data.tiles);
+      if (data?.mathProblems && Array.isArray(data.mathProblems))
+        setLegalMathProblems(data.mathProblems);
+    });
+  }, []);
 
   // Global Escape key listener to dismiss active modals
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         if (themeGateStep) {
           setThemeGateStep(null);
         } else if (activeModal) {
@@ -88,50 +102,51 @@ function StuPDTApp() {
         }
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [themeGateStep, activeModal, setActiveModal]);
 
   const handleThemeButtonClick = () => {
     if (isDarkMode) {
       soundFX.playRubberStamp();
       setSelectedCaptchaIds([]);
-      setCaptchaError('');
-      setMathInput('');
-      setMathError('');
+      setCaptchaError("");
+      setMathInput("");
+      setMathError("");
       setShowMathHint(false);
-      setActiveMathProblem(
-        LEGAL_MATH_PROBLEMS[Math.floor(Math.random() * LEGAL_MATH_PROBLEMS.length)]
-      );
-      setThemeGateStep('captcha');
+      setActiveMathProblem(legalMathProblems[Math.floor(Math.random() * legalMathProblems.length)]);
+      setThemeGateStep("captcha");
     } else {
       soundFX.playChime();
-      setThemeGateStep('back_to_dark');
+      setThemeGateStep("back_to_dark");
     }
   };
 
   const toggleCaptchaTile = (id) => {
-    setCaptchaError('');
+    setCaptchaError("");
     setSelectedCaptchaIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
   const verifyCaptcha = () => {
-    const correctIds = CAPTCHA_TILES.filter((t) => t.isTrafficLight)
+    const correctIds = captchaTiles
+      .filter((t) => t.isTrafficLight)
       .map((t) => t.id)
-      .sort()
-      .join(',');
-    const pickedIds = [...selectedCaptchaIds].sort().join(',');
+      .sort((a, b) => String(a).localeCompare(String(b)))
+      .join(",");
+    const pickedIds = [...selectedCaptchaIds]
+      .sort((a, b) => String(a).localeCompare(String(b)))
+      .join(",");
 
     if (pickedIds === correctIds) {
       soundFX.playChime();
-      setCaptchaError('');
-      setThemeGateStep('math');
+      setCaptchaError("");
+      setThemeGateStep("math");
     } else {
       soundFX.playErrorBuzz();
       setCaptchaError(
-        'Suspiciously robotic click detected. Try clicking ONLY the 3 actual Traffic Lights!'
+        "Suspiciously robotic click detected. Try clicking ONLY the 3 actual Traffic Lights!",
       );
     }
   };
@@ -140,17 +155,17 @@ function StuPDTApp() {
     e.preventDefault();
     if (mathInput.trim() === activeMathProblem.answer) {
       soundFX.playChime();
-      setMathError('');
-      setThemeGateStep('approved');
+      setMathError("");
+      setThemeGateStep("approved");
       setTimeout(() => {
         setIsDarkMode(false);
         setThemeGateStep(null);
-        triggerToast('FORM LT-001 APPROVED! Deploying Retina-Scorching Alpine Light Mode!');
+        triggerToast("FORM LT-001 APPROVED! Deploying Retina-Scorching Alpine Light Mode!");
       }, 1350);
     } else {
       soundFX.playErrorBuzz();
       setMathError(
-        'Incorrect arithmetic! Our server hamsters have rejected your brightness permit. Try again (or ask the Math Specialist for a hint)!'
+        "Incorrect arithmetic! Our server hamsters have rejected your brightness permit. Try again (or ask the Math Specialist for a hint)!",
       );
     }
   };
@@ -163,10 +178,10 @@ function StuPDTApp() {
     performDepartmentTransfer(
       DEPARTMENTS[0],
       `[REDIRECTED FROM "${label}"]: Welcome back to Customer Support #001! We heard you had a problem with our problem-solving system, so we proudly reset your ticket back to Step 1!`,
-      'Infinite Support Loop',
+      "Infinite Support Loop",
       () => {
-        setTimeout(() => setActiveModal('report'), 750);
-      }
+        setTimeout(() => setActiveModal("report"), 750);
+      },
     );
   };
 
@@ -174,8 +189,8 @@ function StuPDTApp() {
   const handleFormApprovedAndShredded = () => {
     performDepartmentTransfer(
       DEPARTMENTS[4],
-      'Thank you for rubber-stamping Forms 001, 001-A, 001-B, and 001-C! All four forms have been immediately shredded to optimize cloud synergy. How else can we not help you today?',
-      'Automated Paper Shredder'
+      "Thank you for rubber-stamping Forms 001, 001-A, 001-B, and 001-C! All four forms have been immediately shredded to optimize cloud synergy. How else can we not help you today?",
+      "Automated Paper Shredder",
     );
   };
 
@@ -186,33 +201,32 @@ function StuPDTApp() {
     performDepartmentTransfer(
       dept,
       `Hello! You manually transferred yourself to ${dept.name}. Naturally, we dropped your entire conversation history during the transfer. What was your problem again?`,
-      'Manual User Transfer'
+      "Manual User Transfer",
     );
   };
 
-  const activeDepartmentObj =
-    DEPARTMENTS.find((d) => d.id === activeDeptId) || DEPARTMENTS[0];
+  const activeDepartmentObj = DEPARTMENTS.find((d) => d.id === activeDeptId) || DEPARTMENTS[0];
 
   const latestAiMessageText = useMemo(() => {
-    if (!Array.isArray(messages)) return 'Hello blind user!';
-    const aiMsgs = messages.filter((m) => m && m.sender === 'ai');
+    if (!Array.isArray(messages)) return "Hello blind user!";
+    const aiMsgs = messages.filter((m) => m && m.sender === "ai");
     return aiMsgs.length > 0 && aiMsgs[aiMsgs.length - 1]?.text
       ? aiMsgs[aiMsgs.length - 1].text
-      : 'Hello blind user!';
+      : "Hello blind user!";
   }, [messages]);
 
   // Crosshair (+) SVG pattern for Dark Mode poster background
   const darkCrosshairBg = {
-    backgroundColor: '#08080A',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg width='44' height='44' viewBox='0 0 44 44' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M22 18v8M18 22h8' stroke='%23ffffff' stroke-opacity='0.09' stroke-width='1'/%3E%3C/svg%3E")`
+    backgroundColor: "#08080A",
+    backgroundImage: `url("data:image/svg+xml,%3Csvg width='44' height='44' viewBox='0 0 44 44' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M22 18v8M18 22h8' stroke='%23ffffff' stroke-opacity='0.09' stroke-width='1'/%3E%3C/svg%3E")`,
   };
 
   return (
     <div
       className={`min-h-screen flex flex-col font-sans transition-colors duration-500 ${
         isDarkMode
-          ? 'text-white selection:bg-[#0EC7F5] selection:text-[#08080A]'
-          : 'bg-[#3888F2] text-[#071638] selection:bg-[#FFE600] selection:text-[#071638]'
+          ? "text-white selection:bg-[#0EC7F5] selection:text-[#08080A]"
+          : "bg-[#3888F2] text-[#071638] selection:bg-[#FFE600] selection:text-[#071638]"
       }`}
       style={isDarkMode ? darkCrosshairBg : undefined}
     >
@@ -251,6 +265,7 @@ function StuPDTApp() {
       <ThemeGatekeeperModal
         themeGateStep={themeGateStep}
         setThemeGateStep={setThemeGateStep}
+        captchaTiles={captchaTiles}
         selectedCaptchaIds={selectedCaptchaIds}
         toggleCaptchaTile={toggleCaptchaTile}
         captchaError={captchaError}
@@ -265,6 +280,7 @@ function StuPDTApp() {
         verifyMathProblem={verifyMathProblem}
       />
       <VisionAIModal
+        visionSamples={visionSamples}
         visionPreviewUrl={visionPreviewUrl}
         visionSampleId={visionSampleId}
         visionScanning={visionScanning}
@@ -274,13 +290,8 @@ function StuPDTApp() {
         onImageFileUpload={handleImageFileUpload}
         onSendVisionResultToChat={sendVisionResultToChat}
       />
-      <OrgAboutModal
-        activeDeptId={activeDeptId}
-        onTransferToDept={handleTransferToDept}
-      />
-      <BureaucracyModal
-        onFormApprovedAndShredded={handleFormApprovedAndShredded}
-      />
+      <OrgAboutModal activeDeptId={activeDeptId} onTransferToDept={handleTransferToDept} />
+      <BureaucracyModal onFormApprovedAndShredded={handleFormApprovedAndShredded} />
       <ToolkitModal />
       <ApologyPdfModal />
       <EmotionalSupportModal />
@@ -302,7 +313,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('StuPDT Error Caught by ErrorBoundary:', error, errorInfo);
+    console.error("StuPDT Error Caught by ErrorBoundary:", error, errorInfo);
   }
 
   handleReset = () => {

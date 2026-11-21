@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
-import { ScanLine, Upload, Loader2, Mountain, Utensils, CupSoda } from 'lucide-react';
-import { VISION_SAMPLES } from '../../constants';
-import { SampleIllustrationSVG } from '../common/SampleIllustrationSVG';
-import { useStuPDT } from '../../contexts/StuPDTContext';
+import React, { useRef } from "react";
+import { ScanLine, Upload, Loader2, Mountain, Utensils, CupSoda } from "lucide-react";
+import { VISION_SAMPLES } from "../../constants";
+import { SampleIllustrationSVG } from "../common/SampleIllustrationSVG";
+import { useStuPDT } from "../../contexts/useStuPDT";
 
 export function VisionAIModal({
+  visionSamples,
   visionPreviewUrl,
   visionSampleId,
   visionScanning,
@@ -12,68 +13,70 @@ export function VisionAIModal({
   visionResult,
   onRunSampleVisionScan,
   onImageFileUpload,
-  onSendVisionResultToChat
+  onSendVisionResultToChat,
 }) {
   const { activeModal, setActiveModal, isDarkMode, tx } = useStuPDT();
   const fileInputRef = useRef(null);
 
-  if (activeModal !== 'vision') return null;
+  if (activeModal !== "vision") return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div
         className={`max-w-xl w-full rounded-3xl p-6 space-y-4 border-2 shadow-2xl max-h-[90vh] overflow-y-auto ${
           isDarkMode
-            ? 'bg-[#111116] border-[#1FE03F] text-white'
-            : 'bg-white border-[#071638] text-[#071638]'
+            ? "bg-[#111116] border-[#1FE03F] text-white"
+            : "bg-white border-[#071638] text-[#071638]"
         }`}
       >
         <div className="flex items-center justify-between border-b border-slate-700/40 pb-3">
           <div>
             <h3 className="text-base sm:text-lg font-black flex items-center gap-2">
               <ScanLine className="w-5 h-5 text-[#1FE03F]" />
-              <span>{tx('StuPDT Vision™ — Ultra-Advanced Detector')}</span>
+              <span>{tx("StuPDT Vision™ — Ultra-Advanced Detector")}</span>
             </h3>
             <p className="text-xs opacity-70 font-medium">
-              {tx('Upload any photo OR click a sample below for 100% confident useless analysis')}
+              {tx("Upload any photo OR click a sample below for 100% confident useless analysis")}
             </p>
           </div>
           <button
             onClick={() => setActiveModal(null)}
             className="px-3 py-1 rounded-xl bg-[#F52820] text-white text-xs font-black cursor-pointer"
           >
-            {tx('Close')}
+            {tx("Close")}
           </button>
         </div>
 
         {/* Instant 1-Click Demo Samples */}
         <div>
           <span className="text-[11px] font-black uppercase tracking-wider opacity-75 block mb-2">
-            {tx('Instant Live Demo Samples:')}
+            {tx("Instant Live Demo Samples:")}
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {VISION_SAMPLES.map((sample) => (
-              <button
-                key={sample.id}
-                onClick={() => onRunSampleVisionScan(sample)}
-                className={`p-2.5 rounded-xl text-xs font-black border transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                  visionSampleId === sample.id
-                    ? 'bg-[#1FE03F] text-[#08080A] border-[#1FE03F]'
-                    : isDarkMode
-                    ? 'bg-[#181820] hover:bg-[#23232F] border-[#2A2A35] text-white'
-                    : 'bg-[#F4F9FF] hover:bg-[#FFE600] border-2 border-[#071638] text-[#071638]'
-                }`}
-              >
-                {sample.id === 'rock' ? (
-                  <Mountain className="w-3.5 h-3.5" />
-                ) : sample.id === 'spaghetti' ? (
-                  <Utensils className="w-3.5 h-3.5" />
-                ) : (
-                  <CupSoda className="w-3.5 h-3.5" />
-                )}
-                <span>{tx(sample.label)}</span>
-              </button>
-            ))}
+            {(visionSamples && visionSamples.length > 0 ? visionSamples : VISION_SAMPLES).map(
+              (sample) => (
+                <button
+                  key={sample.id}
+                  onClick={() => onRunSampleVisionScan(sample)}
+                  className={`p-2.5 rounded-xl text-xs font-black border transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                    visionSampleId === sample.id
+                      ? "bg-[#1FE03F] text-[#08080A] border-[#1FE03F]"
+                      : isDarkMode
+                        ? "bg-[#181820] hover:bg-[#23232F] border-[#2A2A35] text-white"
+                        : "bg-[#F4F9FF] hover:bg-[#FFE600] border-2 border-[#071638] text-[#071638]"
+                  }`}
+                >
+                  {sample.id === "rock" ? (
+                    <Mountain className="w-3.5 h-3.5" />
+                  ) : sample.id === "spaghetti" ? (
+                    <Utensils className="w-3.5 h-3.5" />
+                  ) : (
+                    <CupSoda className="w-3.5 h-3.5" />
+                  )}
+                  <span>{tx(sample.label)}</span>
+                </button>
+              ),
+            )}
           </div>
         </div>
 
@@ -88,8 +91,8 @@ export function VisionAIModal({
           }}
           className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition ${
             isDarkMode
-              ? 'border-[#0EC7F5]/60 bg-[#181820] hover:bg-[#20202b]'
-              : 'border-[#071638] bg-[#F4F9FF] hover:bg-[#FFE600]/30'
+              ? "border-[#0EC7F5]/60 bg-[#181820] hover:bg-[#20202b]"
+              : "border-[#071638] bg-[#F4F9FF] hover:bg-[#FFE600]/30"
           }`}
         >
           <input
@@ -100,15 +103,15 @@ export function VisionAIModal({
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) onImageFileUpload(file);
-              e.target.value = '';
+              e.target.value = "";
             }}
           />
           <Upload className="w-6 h-6 mx-auto mb-1 text-[#0EC7F5]" />
           <p className="text-xs font-black">
-            {tx('Click or Drag & Drop Your Own Photo (JPG / PNG / WebP)')}
+            {tx("Click or Drag & Drop Your Own Photo (JPG / PNG / WebP)")}
           </p>
           <p className="text-[11px] opacity-65 mt-0.5">
-            {tx('Powered by StuPDT Multi-Agent Tautological Vision Engine')}
+            {tx("Powered by StuPDT Multi-Agent Tautological Vision Engine")}
           </p>
         </div>
 
@@ -116,7 +119,9 @@ export function VisionAIModal({
         {(visionPreviewUrl || visionSampleId) && (
           <div
             className={`rounded-2xl p-4 border space-y-3 ${
-              isDarkMode ? 'bg-[#0C0C10] border-[#2A2A35]' : 'bg-[#F4F9FF] border-2 border-[#071638]'
+              isDarkMode
+                ? "bg-[#0C0C10] border-[#2A2A35]"
+                : "bg-[#F4F9FF] border-2 border-[#071638]"
             }`}
           >
             <div className="relative h-44 w-full rounded-xl overflow-hidden flex items-center justify-center bg-black/40">
@@ -162,11 +167,11 @@ export function VisionAIModal({
 
                 <div
                   className={`p-3 rounded-xl border ${
-                    isDarkMode ? 'bg-[#181820] border-[#2A2A35]' : 'bg-white border-[#071638]'
+                    isDarkMode ? "bg-[#181820] border-[#2A2A35]" : "bg-white border-[#071638]"
                   }`}
                 >
                   <span className="text-[10px] font-black uppercase tracking-wider text-[#FF6B1A] block mb-1.5">
-                    {tx('Detected Ingredients / Complete Breakdown:')}
+                    {tx("Detected Ingredients / Complete Breakdown:")}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {visionResult.ingredients.map((ing, i) => (
@@ -185,7 +190,7 @@ export function VisionAIModal({
                   onClick={onSendVisionResultToChat}
                   className="w-full py-2.5 rounded-xl bg-[#0EC7F5] hover:bg-[#0bb2dc] text-[#08080A] font-black text-xs sm:text-sm cursor-pointer"
                 >
-                  {tx('Send Scan Result to Chat →')}
+                  {tx("Send Scan Result to Chat →")}
                 </button>
               </div>
             )}

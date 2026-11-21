@@ -11,7 +11,7 @@
 
 ### **Stupid. Fast. Wrong.**
 
-*The customer-support chatbot that transfers you to 7 departments and solves 0 problems.*
+_The customer-support chatbot that transfers you to 7 departments and solves 0 problems._
 
 ![React](https://img.shields.io/badge/React-19-0EC7F5?style=for-the-badge&logo=react&logoColor=08080A&labelColor=08080A)
 ![Vite+](https://img.shields.io/badge/Vite%2B-1.7-FFE600?style=for-the-badge&logo=vite&logoColor=FFE600&labelColor=08080A)
@@ -29,7 +29,7 @@
 
 **StuPDT** is a satirical AI support desk. Ask it anything. It will never answer.
 
-Instead it gives you a cheerful corporate non-answer, hands you off to a new "specialist", makes you confirm obvious facts, asks for forms that depend on other forms, and blames Mercury retrograde. It's a parody of every support chatbot that ever said *"I understand your frustration"* and then did nothing.
+Instead it gives you a cheerful corporate non-answer, hands you off to a new "specialist", makes you confirm obvious facts, asks for forms that depend on other forms, and blames Mercury retrograde. It's a parody of every support chatbot that ever said _"I understand your frustration"_ and then did nothing.
 
 It is also a real, fully working React app with live AI, vision analysis, a themed accessibility suite, a sound engine and a mock bureaucracy engine. All of it is built to be as unhelpful as possible.
 
@@ -50,21 +50,21 @@ Open **http://localhost:5173**, then run through the demo below.
 
 Type each message (or click the suggested reply chip above the input):
 
-| # | You say | StuPDT does |
-|---|---------|-------------|
-| 1 | `I have an exam tomorrow. Can you help me study?` | Transfers you to the "Academic Assistance Department" |
-| 2 | `Okay.` | Asks you to **confirm you are a student** |
-| 3 | `Yes.` | *"Congratulations! You're a student. We only assist non-students."* |
-| 4 | `WHAT?` | Apologizes sincerely. Your ticket number is unavailable because the **Ticket Number Department is down** |
-| 5 | `StuPDT, PLEASE JUST ANSWER MY QUESTION.` | 🚨 **The Grand Finale** |
+| #   | You say                                           | StuPDT does                                                                                              |
+| --- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | `I have an exam tomorrow. Can you help me study?` | Transfers you to the "Academic Assistance Department"                                                    |
+| 2   | `Okay.`                                           | Asks you to **confirm you are a student**                                                                |
+| 3   | `Yes.`                                            | _"Congratulations! You're a student. We only assist non-students."_                                      |
+| 4   | `WHAT?`                                           | Apologizes sincerely. Your ticket number is unavailable because the **Ticket Number Department is down** |
+| 5   | `StuPDT, PLEASE JUST ANSWER MY QUESTION.`         | 🚨 **The Grand Finale**                                                                                  |
 
 ### Other things worth typing
 
-| Try | Result |
-|-----|--------|
-| `Fix my Wi-Fi` | Confidence Without Competence™: *"Your Wi-Fi needs internet."* |
-| `What time is it?` | Asks you to confirm in writing that you exist within **linear time** |
-| Anything else | Rotates to the next department, answered live by Gemini (or offline fallback) |
+| Try                | Result                                                                        |
+| ------------------ | ----------------------------------------------------------------------------- |
+| `Fix my Wi-Fi`     | Confidence Without Competence™: _"Your Wi-Fi needs internet."_                |
+| `What time is it?` | Asks you to confirm in writing that you exist within **linear time**          |
+| Anything else      | Rotates to the next department, answered live by Gemini (or offline fallback) |
 
 ---
 
@@ -74,39 +74,45 @@ Type each message (or click the suggested reply chip above the input):
 
 Every reply comes from a persona with its own accent colour and system prompt. Each message shows a **Confidence**, **Accuracy** (always `CLASSIFIED`) and **Blame** badge.
 
-| Code | Department | Specialty |
-|------|-----------|-----------|
-| `AGENT #001` | Frontline Referral Specialist | Transfers 100% of incoming questions |
-| `AGENT #002` | Obvious Fact Verification Officer | Asks you to confirm obvious things |
-| `SUPERVISOR #003` | Catch-22 Policy Director | Only assists the exact opposite group |
-| `EXEC-009` | Chief Incompetence Officer | Ensures 0% of problems are solved |
-| `BUREAU-004` | Chief Paperwork Architect | Form 001-B needs Form 001-C first |
-| `BLAME-005` | Confidence Without Competence™ Lead | 99.97% confident, 0% helpful |
-| `CEO-000` | Chief Executive Hallucinator | Has never answered a question |
+| Code              | Department                          | Specialty                             |
+| ----------------- | ----------------------------------- | ------------------------------------- |
+| `AGENT #001`      | Frontline Referral Specialist       | Transfers 100% of incoming questions  |
+| `AGENT #002`      | Obvious Fact Verification Officer   | Asks you to confirm obvious things    |
+| `SUPERVISOR #003` | Catch-22 Policy Director            | Only assists the exact opposite group |
+| `EXEC-009`        | Chief Incompetence Officer          | Ensures 0% of problems are solved     |
+| `BUREAU-004`      | Chief Paperwork Architect           | Form 001-B needs Form 001-C first     |
+| `BLAME-005`       | Confidence Without Competence™ Lead | 99.97% confident, 0% helpful          |
+| `CEO-000`         | Chief Executive Hallucinator        | Has never answered a question         |
 
 Open the **ⓘ** icon in the header to see the org chart and manually transfer yourself (your conversation history will be dropped, naturally).
 
 ### 📋 Form 001 Bureaucracy Simulator
+
 Fill out Forms 001, 001-A, 001-B and 001-C. Submit them. Get a Catch-22 error. Use the **Emergency Rubber Stamp Bypass** to have them all approved and shredded instantly.
 
 ### 📷 StuPDT Vision™
-Upload a photo, or run one of the built-in samples (rock, spaghetti, water). Vision identifies the main object and reports, with **100.00% confidence**, that your rock is a rock. Ingredients list: *Rock (100%)*.
+
+Upload a photo, or run one of the built-in samples (rock, spaghetti, water). Vision identifies the main object and reports, with **100.00% confidence**, that your rock is a rock. Ingredients list: _Rock (100%)_.
 
 ### ☀️ The Theme Gatekeeper
+
 The app starts in a dark crosshair-poster theme. Switching to **Light Mode** requires you to:
 
 1. Pass a CAPTCHA (select only the 3 real Traffic Lights, not "Just a Rock" or "Our CEO AI")
 2. Solve a **Mandatory Legal Math** problem (a hint is available from a Math Specialist who is "risking termination")
 
 ### ♿ Accessibility, interpreted loosely
+
 - **Braille mode** converts all visible UI text to Unicode Braille
 - **Sign Language widget** is a floating picture-in-picture interpreter that gestures along with the latest reply
 - **Sound engine** gives you chimes, rubber stamps, error buzzes, a transfer-hold tune and a klaxon, all synthesized in-browser. Mute any time.
 
 ### 🧰 Useless Toolkit™
-A 47-page apology PDF, Emotional Support Mode (StuPDT needs *you* to comfort *it*), a 99% Loading Simulator, a Human Department that is being replaced by AI, and **Premium Nothing™** for ₱999 imaginary pesos.
+
+A 47-page apology PDF, Emotional Support Mode (StuPDT needs _you_ to comfort _it_), a 99% Loading Simulator, a Human Department that is being replaced by AI, and **Premium Nothing™** for ₱999 imaginary pesos.
 
 ### 📊 Live chaos telemetry
+
 Departments consulted, internal meetings, minutes wasted, user satisfaction (floors at **-999**) and a Chaos Meter. Reach 100% and a national bureaucratic emergency is declared. Open **Report** to see your damage.
 
 ---
@@ -115,14 +121,14 @@ Departments consulted, internal meetings, minutes wasted, user satisfaction (flo
 
 Everything below is **optional**. Copy `.env.example` to `.env` to use it.
 
-| Variable | Where it's used | Purpose |
-|----------|-----------------|---------|
-| `GEMINI_API_KEY` | Server (`/api/gemini` proxy) | Live AI chat and image detection. Keeps the key private. **Recommended for deployments.** |
-| `GEMINI_MODEL` | Server | Model override for the proxy |
-| `VITE_API_BASE_URL` | Browser | Backend base URL. Leave blank for relative `/api` |
-| `VITE_GEMINI_API_KEY` | Browser | Calls Gemini directly from the client. **Local dev only** |
-| `VITE_GEMINI_MODEL` | Browser | Model override for direct client calls (default `gemini-3-flash-preview`) |
-| `VITE_BACKEND_URL` | Vite dev server | Target for the `/api` dev proxy (default `http://127.0.0.1:8000`) |
+| Variable              | Where it's used              | Purpose                                                                                   |
+| --------------------- | ---------------------------- | ----------------------------------------------------------------------------------------- |
+| `GEMINI_API_KEY`      | Server (`/api/gemini` proxy) | Live AI chat and image detection. Keeps the key private. **Recommended for deployments.** |
+| `GEMINI_MODEL`        | Server                       | Model override for the proxy                                                              |
+| `VITE_API_BASE_URL`   | Browser                      | Backend base URL. Leave blank for relative `/api`                                         |
+| `VITE_GEMINI_API_KEY` | Browser                      | Calls Gemini directly from the client. **Local dev only**                                 |
+| `VITE_GEMINI_MODEL`   | Browser                      | Model override for direct client calls (default `gemini-3-flash-preview`)                 |
+| `VITE_BACKEND_URL`    | Vite dev server              | Target for the `/api` dev proxy (default `http://127.0.0.1:8000`)                         |
 
 > ⚠️ **Anything prefixed `VITE_` is bundled into the client and visible to every visitor.** Never ship a real `VITE_GEMINI_API_KEY` to production. Use `GEMINI_API_KEY` on the server instead.
 
@@ -160,12 +166,12 @@ StuPDT degrades gracefully, so the demo can't be broken by a missing backend:
 
 The project uses **pnpm** and **Vite+** (`vp`).
 
-| Command | What it does |
-|---------|--------------|
-| `pnpm dev` | Start the dev server on port `5173` |
-| `pnpm build` | Type-check with `tsc -b`, then production build |
-| `pnpm preview` | Serve the production build locally |
-| `pnpm lint` | Lint with type-aware rules (`react/rules-of-hooks` is an error) |
+| Command        | What it does                                                    |
+| -------------- | --------------------------------------------------------------- |
+| `pnpm dev`     | Start the dev server on port `5173`                             |
+| `pnpm build`   | Type-check with `tsc -b`, then production build                 |
+| `pnpm preview` | Serve the production build locally                              |
+| `pnpm lint`    | Lint with type-aware rules (`react/rules-of-hooks` is an error) |
 
 ---
 
@@ -207,7 +213,7 @@ STUPDT_FRONTEND/
 ### Architecture at a glance
 
 - **State:** One `StuPDTContext` holds theme, Braille/sign-language modes, mute, metrics and the active modal. Chat state lives in the `useChat` hook.
-- **Persistence:** Chat history, metrics and VIP status are kept in `sessionStorage`, so a refresh keeps your suffering. The ErrorBoundary offers a *Clear Corrupted Storage & Reload* button.
+- **Persistence:** Chat history, metrics and VIP status are kept in `sessionStorage`, so a refresh keeps your suffering. The ErrorBoundary offers a _Clear Corrupted Storage & Reload_ button.
 - **Resilience:** Every network call fails soft. 401/403/404/405 responses short-circuit straight to the offline fallback instead of retrying.
 - **Sound:** All audio is synthesized with the Web Audio API in `soundEngine.js`. There are no audio files to load.
 
@@ -215,12 +221,12 @@ STUPDT_FRONTEND/
 
 ## Tech stack
 
-| | |
-|---|---|
-| **UI** | React 19, Lucide icons |
-| **Styling** | Tailwind CSS 3.4, PostCSS, Autoprefixer |
-| **Tooling** | Vite+ (`vp`), TypeScript, pnpm |
-| **AI** | Google Gemini (chat + structured-JSON vision), fully optional |
+|             |                                                               |
+| ----------- | ------------------------------------------------------------- |
+| **UI**      | React 19, Lucide icons                                        |
+| **Styling** | Tailwind CSS 3.4, PostCSS, Autoprefixer                       |
+| **Tooling** | Vite+ (`vp`), TypeScript, pnpm                                |
+| **AI**      | Google Gemini (chat + structured-JSON vision), fully optional |
 
 ---
 
@@ -228,11 +234,11 @@ STUPDT_FRONTEND/
 
 Two posters, one toggle. The theme names come from the in-app copy.
 
-| | 🌑 Dark (default) | ☀️ Light ("Alpine Sky") |
-|---|---|---|
-| **Background** | `#08080A` with a crosshair grid | `#3888F2` |
-| **Accents** | `#0EC7F5` `#1FE03F` `#FF6B1A` `#F52820` | `#FFE600` `#071638` |
-| **Vibe** | Retro-OS window chrome, glowing wordmark | Bold outlines, hard drop-shadows |
+|                | 🌑 Dark (default)                        | ☀️ Light ("Alpine Sky")          |
+| -------------- | ---------------------------------------- | -------------------------------- |
+| **Background** | `#08080A` with a crosshair grid          | `#3888F2`                        |
+| **Accents**    | `#0EC7F5` `#1FE03F` `#FF6B1A` `#F52820`  | `#FFE600` `#071638`              |
+| **Vibe**       | Retro-OS window chrome, glowing wordmark | Bold outlines, hard drop-shadows |
 
 ---
 
@@ -256,6 +262,6 @@ The Human Department is currently being replaced by AI.
 
 **StuPDT™ · Stupid. Fast. Wrong. · MALFUNCTION 2026**
 
-*We apologize for the inconvenience caused by our previous inconvenience.*
+_We apologize for the inconvenience caused by our previous inconvenience._
 
 </div>

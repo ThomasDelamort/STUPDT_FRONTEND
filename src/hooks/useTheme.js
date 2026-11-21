@@ -1,4 +1,4 @@
-import { useStuPDT } from '../contexts/StuPDTContext';
+import { useStuPDT } from "../contexts/useStuPDT";
 
 export function useTheme() {
   const {
@@ -8,7 +8,7 @@ export function useTheme() {
     setBrailleMode,
     signLanguageMode,
     setSignLanguageMode,
-    tx
+    tx,
   } = useStuPDT();
 
   return {
@@ -18,6 +18,6 @@ export function useTheme() {
     setBrailleMode,
     signLanguageMode,
     setSignLanguageMode,
-    tx
+    tx,
   };
 }

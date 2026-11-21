@@ -1,7 +1,7 @@
-import React from 'react';
-import { Eye, Accessibility } from 'lucide-react';
-import { toBraille } from '../../utils/braille';
-import { useStuPDT } from '../../contexts/StuPDTContext';
+import React from "react";
+import { Eye, Accessibility } from "lucide-react";
+import { toBraille } from "../../utils/braille";
+import { useStuPDT } from "../../contexts/useStuPDT";
 
 export function BrailleBanner() {
   const { brailleMode, setBrailleMode, soundFX } = useStuPDT();
@@ -15,7 +15,7 @@ export function BrailleBanner() {
           <Accessibility className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
             {toBraille(
-              'ACCESSIBLE FOR BLIND PEOPLE ENABLED! All text is now flat, completely smooth digital Braille dots on your glass screen. Please gently touch your monitor to read.'
+              "ACCESSIBLE FOR BLIND PEOPLE ENABLED! All text is now flat, completely smooth digital Braille dots on your glass screen. Please gently touch your monitor to read.",
             )}
           </span>
         </div>

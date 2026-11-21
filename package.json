@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
+    "backend": "cd ../STUPDT_BACKEND && .venv/bin/uvicorn app.main:app --reload --port 8000",
+    "dev:backend": "cd ../STUPDT_BACKEND && .venv/bin/uvicorn app.main:app --reload --port 8000",
     "build": "tsc -b && vp build",
     "lint": "vp lint",
     "preview": "vp preview"

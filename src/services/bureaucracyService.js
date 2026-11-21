@@ -1,4 +1,4 @@
-import { apiFetch } from './apiClient';
+import { apiFetch } from "./apiClient";
 
 /**
  * Submit Form 001 to backend bureaucracy endpoint
@@ -6,9 +6,9 @@ import { apiFetch } from './apiClient';
  */
 export async function submitBureaucracyForm(formData) {
   try {
-    const res = await apiFetch('/api/bureaucracy/submit', {
-      method: 'POST',
-      body: JSON.stringify(formData)
+    const res = await apiFetch("/api/bureaucracy/submit", {
+      method: "POST",
+      body: JSON.stringify(formData),
     });
 
     if (res.ok && res.data) {
@@ -23,6 +23,6 @@ export async function submitBureaucracyForm(formData) {
     success: false,
     stamped: false,
     error:
-      'CATCH-22 ERROR: Your request cannot proceed because Form 001-B requires Form 001-C to be notarized BEFORE you started filling out Form 001.'
+      "CATCH-22 ERROR: Your request cannot proceed because Form 001-B requires Form 001-C to be notarized BEFORE you started filling out Form 001.",
   };
 }

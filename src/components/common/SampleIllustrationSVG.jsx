@@ -1,9 +1,12 @@
-import React from 'react';
+import React from "react";
 
 export function SampleIllustrationSVG({ sampleId }) {
-  if (sampleId === 'rock') {
+  if (sampleId === "rock") {
     return (
-      <svg viewBox="0 0 240 160" className="w-full h-full rounded-xl bg-gradient-to-b from-slate-800 to-slate-900">
+      <svg
+        viewBox="0 0 240 160"
+        className="w-full h-full rounded-xl bg-gradient-to-b from-slate-800 to-slate-900"
+      >
         <defs>
           <radialGradient id="rockGrad" cx="40%" cy="35%" r="65%">
             <stop offset="0%" stopColor="#94A3B8" />
@@ -18,7 +21,13 @@ export function SampleIllustrationSVG({ sampleId }) {
           stroke="#1E293B"
           strokeWidth="3"
         />
-        <path d="M65,52 L114,76 L166,44" fill="none" stroke="#CBD5E1" strokeWidth="2" opacity="0.45" />
+        <path
+          d="M65,52 L114,76 L166,44"
+          fill="none"
+          stroke="#CBD5E1"
+          strokeWidth="2"
+          opacity="0.45"
+        />
         <path d="M114,76 L124,132" fill="none" stroke="#1E293B" strokeWidth="2.5" opacity="0.5" />
         <circle cx="88" cy="96" r="3" fill="#475569" />
         <circle cx="152" cy="86" r="4" fill="#475569" />
@@ -26,10 +35,21 @@ export function SampleIllustrationSVG({ sampleId }) {
       </svg>
     );
   }
-  if (sampleId === 'spaghetti') {
+  if (sampleId === "spaghetti") {
     return (
-      <svg viewBox="0 0 240 160" className="w-full h-full rounded-xl bg-gradient-to-b from-amber-950/60 to-slate-900">
-        <ellipse cx="120" cy="116" rx="88" ry="28" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="3" />
+      <svg
+        viewBox="0 0 240 160"
+        className="w-full h-full rounded-xl bg-gradient-to-b from-amber-950/60 to-slate-900"
+      >
+        <ellipse
+          cx="120"
+          cy="116"
+          rx="88"
+          ry="28"
+          fill="#F8FAFC"
+          stroke="#CBD5E1"
+          strokeWidth="3"
+        />
         <ellipse cx="120" cy="114" rx="68" ry="19" fill="#E2E8F0" />
         <g stroke="#FACC15" strokeWidth="4.5" fill="none" strokeLinecap="round">
           <path d="M64,108 Q88,68 122,74 Q158,80 176,108" />
@@ -52,9 +72,17 @@ export function SampleIllustrationSVG({ sampleId }) {
     );
   }
   return (
-    <svg viewBox="0 0 240 160" className="w-full h-full rounded-xl bg-gradient-to-b from-sky-950 to-slate-900">
+    <svg
+      viewBox="0 0 240 160"
+      className="w-full h-full rounded-xl bg-gradient-to-b from-sky-950 to-slate-900"
+    >
       <ellipse cx="120" cy="136" rx="46" ry="9" fill="rgba(0,0,0,0.4)" />
-      <polygon points="84,30 156,30 144,132 96,132" fill="rgba(224,242,254,0.18)" stroke="#BAE6FD" strokeWidth="3" />
+      <polygon
+        points="84,30 156,30 144,132 96,132"
+        fill="rgba(224,242,254,0.18)"
+        stroke="#BAE6FD"
+        strokeWidth="3"
+      />
       <polygon points="88,62 152,62 143,130 97,130" fill="#38BDF8" opacity="0.72" />
       <ellipse cx="120" cy="62" rx="32" ry="6" fill="#7DD3FC" />
       <ellipse cx="120" cy="30" rx="36" ry="6" fill="none" stroke="#E0F2FE" strokeWidth="2.5" />
