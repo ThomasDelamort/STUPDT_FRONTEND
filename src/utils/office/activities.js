@@ -32,7 +32,7 @@ export function travel(
     if (actor.travelToken === token && onArrive) onArrive();
   };
   if (engine.reducedMotion) {
-    engine.fadeRelocate(actor, target, done);
+    engine.fadeRelocate(actor, target, token, done);
     return;
   }
   if (direct) {
@@ -43,6 +43,7 @@ export function travel(
 
 export function cancelTravel(actor) {
   actor.travelToken = ++tokenSeq;
+  actor.targetAlpha = 1;
   actor.stop();
   // a cancelled stand-up can never call its "free" callback: don't leave
   // the actor flagged as exiting forever
@@ -155,7 +156,7 @@ export class Activity {
     m.actor.state = "perform";
     m.actor.directWalk = false;
     if (m.spot.face) m.actor.facing = m.spot.face;
-    if (!this.seen) {
+    if (!this.seen && this.allPerforming) {
       this.seen = true;
       this.engine.director.markSeen(this.activity);
     }
@@ -201,6 +202,9 @@ export class Activity {
     }
     if (!this.members.length) this.finish();
     else this.onMemberLeft(m);
+    // A new station may still be waiting for the previous seat exit.
+    // Its waiting member doesn't own that movement or its depth yet.
+    if (actor.exiting && m.phase === "wait") return;
     cancelTravel(actor);
     if (exit) {
       actor.exiting = true;

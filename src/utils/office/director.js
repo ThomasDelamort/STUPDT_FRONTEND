@@ -85,9 +85,18 @@ export class Director {
       const need = s.groups.reduce((sum, g) => sum + OFFICE_GROUPS[g].spots.length, 0);
       return need <= n;
     });
-    const pool = candidates.length ? candidates : OFFICE_SCENES;
-    // summed (not averaged) staleness: a scene that shows two unseen
-    // activities beats one that shows a single unseen activity
+    let pool = candidates.length ? candidates : OFFICE_SCENES;
+    const unseenCount = (s) => this.sceneActivities(s).filter((a) => this.lastSeen[a] === undefined).length;
+    const mostUnseen = Math.max(...pool.map(unseenCount));
+    if (mostUnseen) {
+      pool = pool.filter((s) => unseenCount(s) === mostUnseen);
+    } else {
+      const oldest = OFFICE_ACTIVITIES.reduce((a, b) => this.lastSeen[a] < this.lastSeen[b] ? a : b);
+      if (this.engine.time - this.lastSeen[oldest] > TIMING.COVERAGE_WINDOW / 2) {
+        const overdue = pool.filter((s) => this.sceneActivities(s).includes(oldest));
+        if (overdue.length) pool = overdue;
+      }
+    }
     return this.rng.weighted(pool, (s) => {
       const acts = this.sceneActivities(s);
       const stale = acts.reduce((sum, a) => sum + this.staleness(a) ** 2, 0);

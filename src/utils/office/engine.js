@@ -302,10 +302,11 @@ export class OfficeEngine {
   }
 
   /** Reduced motion: fade out, relocate, fade in (no walking). */
-  fadeRelocate(actor, target, done) {
+  fadeRelocate(actor, target, token, done) {
     actor.stop();
     actor.targetAlpha = 0;
     this.after(TIMING.FADE_MS / 1000, () => {
+      if (actor.travelToken !== token) return;
       this.allowJump = true;
       actor.placeAt(target.x, target.y);
       actor.targetAlpha = 1;
