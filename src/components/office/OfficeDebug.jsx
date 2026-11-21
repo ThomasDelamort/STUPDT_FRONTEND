@@ -142,10 +142,9 @@ export function OfficeDebugPanel({ snapshot }) {
   const [player, setPlayer] = useState(false);
   const s = snapshot || {};
   return (
-    <>
+    <div className="grid gap-3 bg-[#111116] p-3 font-mono text-[11px] leading-snug text-slate-200 sm:grid-cols-2">
       <div
-        className="office-debug-panel absolute top-1 right-1 z-20 w-[230px] max-h-[96%] overflow-auto rounded-lg bg-black/80 text-[10px] leading-tight text-slate-200 p-2 font-mono pointer-events-auto"
-        onPointerDown={(e) => e.stopPropagation()}
+        className="office-debug-panel min-w-0"
       >
         <div className="flex justify-between font-bold text-[#FFE600]">
           <span>OFFICE DEBUG</span>
@@ -158,7 +157,7 @@ export function OfficeDebugPanel({ snapshot }) {
         </div>
         <div className="truncate">scene: {s.scene}</div>
         <div className="truncate">arc: {s.arc || "-"}</div>
-        <div className="mt-1 grid grid-cols-1">
+        <div className="mt-1 grid grid-cols-2 gap-x-2">
           {OFFICE_ACTIVITIES.map((a) => (
             <span key={a} className={s.seen && s.seen[a] ? "text-[#1FE03F]" : "text-slate-500"}>
               {s.seen && s.seen[a] ? "✓" : "·"} {OFFICE_ACTIVITY_LABELS[a]}{" "}
@@ -179,14 +178,13 @@ export function OfficeDebugPanel({ snapshot }) {
       </div>
       {player && (
         <div
-          className="office-debug-panel absolute top-1 left-1 z-20 w-[250px] max-h-[96%] overflow-auto rounded-lg bg-black/85 text-[10px] leading-tight text-slate-200 p-2 font-mono pointer-events-auto"
-          onPointerDown={(e) => e.stopPropagation()}
+          className="office-debug-panel min-w-0"
         >
           <div className="font-bold text-[#FFE600]">IN-PLACE PLAYER</div>
           <InPlacePlayer atlases={s.atlases || []} />
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -251,6 +249,7 @@ function InPlacePlayer({ atlases }) {
     <div className="mt-1 space-y-1">
       <div className="flex gap-1">
         <select
+          aria-label="Character"
           className="flex-1 bg-slate-800 rounded"
           value={ci}
           onChange={(e) => setCi(Number(e.target.value))}
@@ -262,6 +261,7 @@ function InPlacePlayer({ atlases }) {
           ))}
         </select>
         <select
+          aria-label="Animation"
           className="flex-1 bg-slate-800 rounded"
           value={key}
           onChange={(e) => setClip(e.target.value)}

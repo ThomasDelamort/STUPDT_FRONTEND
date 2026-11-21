@@ -68,6 +68,7 @@ export function useOfficeEngine({
 
   useEffect(() => {
     txRef.current = tx;
+    engineRef.current?.setTx(tx);
   }, [tx]);
   useEffect(() => {
     debugCbRef.current = onDebug;
@@ -97,8 +98,6 @@ export function useOfficeEngine({
           onDebug: (snap) => debugCbRef.current?.(snap),
         });
         engineRef.current = engine;
-        // QA handle for automated checks (debug sessions only)
-        if (init.debug) /** @type {any} */ (window).__office = engine;
         engine.setScale(scaleRef.current.s, scaleRef.current.w);
         engine.start();
         const v = visibleRef.current;
@@ -123,7 +122,14 @@ export function useOfficeEngine({
     engineRef.current?.setReducedMotion(reducedMotion);
   }, [reducedMotion, ready]);
   useEffect(() => {
-    engineRef.current?.setDebug(debug);
+    const engine = engineRef.current;
+    if (!engine) return;
+    engine.setDebug(debug);
+    const w = /** @type {any} */ (window);
+    if (debug) w.__office = engine;
+    return () => {
+      if (w.__office === engine) delete w.__office;
+    };
   }, [debug, ready]);
 
   // ---- scale: one transform on the world, from the card width --------------

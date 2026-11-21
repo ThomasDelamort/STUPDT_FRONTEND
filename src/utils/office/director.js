@@ -568,7 +568,6 @@ class Huddle {
     const sp = this.actor(beat.speaker);
     const ms = bubbleLifetimeMs(beat.text);
     e.bubbles.say(sp, beat.text, { heat: beat.heat, kind: beat.kind || "argue", ms });
-    e.caption(sp.name, beat.text);
     e.blip(sp);
     this.currentBeat = beat;
     this.beatEndsAt = this.t + ms / 1000;

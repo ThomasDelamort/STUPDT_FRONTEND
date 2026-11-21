@@ -121,7 +121,7 @@ export class Actor {
     const tag = document.createElement("div");
     tag.className = "office-tag";
     tag.style.setProperty("--accent", character.accent);
-    tag.textContent = character.name.toUpperCase();
+    tag.textContent = engine.tx(character.name.toUpperCase());
     this.tagEl = tag;
 
     const mark = document.createElement("div");

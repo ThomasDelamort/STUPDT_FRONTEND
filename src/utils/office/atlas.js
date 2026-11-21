@@ -77,6 +77,7 @@ export async function decodeImage(url) {
         img.onerror = reject;
       });
     }
+    if (!img.naturalWidth) throw new Error(`Unable to load office image: ${url}`);
   }
   return img;
 }

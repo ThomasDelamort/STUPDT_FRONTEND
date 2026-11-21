@@ -240,7 +240,7 @@ export class OfficeEngine {
       this.fpsT = 0;
     }
     this.debugStats.jsMs = performance.now() - t0;
-    if (this.opts.onDebug) {
+    if (this.debug && this.opts.onDebug) {
       this.debugT += dt;
       if (this.debugT > 0.2) {
         this.debugT = 0;
@@ -368,6 +368,8 @@ export class OfficeEngine {
 
   setTx(tx) {
     this.tx = tx;
+    for (const actor of this.actors) actor.tagEl.textContent = tx(actor.name.toUpperCase());
+    this.bubbles.refreshText();
   }
 
   setReducedMotion(on) {

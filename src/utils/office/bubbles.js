@@ -23,7 +23,6 @@ export class Bubbles {
    */
   say(actor, text, opts = {}) {
     const engine = this.engine;
-    const shown = engine.tx(text);
     let b = this.byActor.get(actor.id);
     if (!b) {
       const el = document.createElement("div");
@@ -44,8 +43,7 @@ export class Bubbles {
     }
     const kind = opts.kind || "argue";
     const reduced = engine.reducedMotion;
-    b.text = shown;
-    b.revealed = reduced || kind === "rep" ? shown.length : 0;
+    b.source = text;
     b.t = 0;
     b.life = (opts.ms ?? bubbleLifetimeMs(text)) / 1000;
     b.kind = kind;
@@ -53,18 +51,30 @@ export class Bubbles {
     b.el.dataset.kind = kind;
     b.el.dataset.heat = String(Math.max(0, Math.min(TIMING.HEAT_STEPS, opts.heat || 0)));
     b.el.classList.toggle("office-bubble--still", reduced);
-    b.name.textContent =
-      kind === "argue" || kind === "verdict" ? `${engine.tx(actor.name.toUpperCase())}: ` : "";
     b.name.style.color = actor.char.accent;
-    b.on.textContent = shown.slice(0, b.revealed);
-    b.off.textContent = shown.slice(b.revealed);
+    this.updateText(b);
+    engine.caption(actor.name, text);
     b.el.style.opacity = "1";
     b.el.classList.remove("office-bubble--pop");
     // restart the pop-in animation
     void b.el.offsetWidth;
     b.el.classList.add("office-bubble--pop");
-    b.width = b.el.offsetWidth; // one layout read per line, not per frame
     return b;
+  }
+
+  updateText(b) {
+    const { tx, reducedMotion } = this.engine;
+    b.text = tx(b.source);
+    b.revealed = reducedMotion || b.kind === "rep" ? b.text.length : Math.min(b.text.length, Math.floor(b.t * TIMING.TYPE_CPS));
+    b.name.textContent = b.kind === "argue" || b.kind === "verdict" ? `${tx(b.actor.name.toUpperCase())}: ` : "";
+    b.on.textContent = b.text.slice(0, b.revealed);
+    b.off.textContent = b.text.slice(b.revealed);
+    b.width = b.el.offsetWidth;
+    b.height = b.el.offsetHeight;
+  }
+
+  refreshText() {
+    for (const b of this.byActor.values()) if (b.alive) this.updateText(b);
   }
 
   clear(actor) {
@@ -114,7 +124,7 @@ export class Bubbles {
       const p = b.actor.bubbleAnchor(alpha);
       const half = (b.width || 120) / 2;
       const x = Math.max(half + 4, Math.min(sceneW - half - 4, p.x * s));
-      const y = Math.max(4, p.y * s);
+      const y = Math.max(b.height + 4, p.y * s);
       const tail = Math.max(-half + 12, Math.min(half - 12, p.x * s - x));
       const t = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-100%)`;
       if (b.cache.t !== t) {

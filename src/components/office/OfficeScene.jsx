@@ -261,7 +261,6 @@ export function OfficeScene({ messages, isTransferring, transferTarget, activeDe
           </div>
         )}
 
-        {debug && ready && <OfficeDebugPanel snapshot={snapshot} />}
       </div>
 
       {/* Caption strip: the readable version of the latest line */}
@@ -273,6 +272,8 @@ export function OfficeScene({ messages, isTransferring, transferTarget, activeDe
       >
         <span className={caption ? "" : "italic opacity-75"}>{tx(captionText)}</span>
       </p>
+
+      {debug && ready && <OfficeDebugPanel snapshot={snapshot} />}
 
       {/* Offscreen hint: never auto-scrolls, just offers */}
       {showHint && (
