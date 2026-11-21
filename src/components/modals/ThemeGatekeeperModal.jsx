@@ -38,6 +38,7 @@ function CaptchaTileIcon({ type }) {
 export function ThemeGatekeeperModal({
   themeGateStep,
   setThemeGateStep,
+  activeCaptchaChallenge,
   captchaTiles,
   selectedCaptchaIds,
   toggleCaptchaTile,
@@ -51,6 +52,9 @@ export function ThemeGatekeeperModal({
   showMathHint,
   setShowMathHint,
   verifyMathProblem,
+  serverHint,
+  onRequestHint,
+  isVerifying = false,
 }) {
   const { isDarkMode, setIsDarkMode, soundFX, triggerToast, tx } = useStuPDT();
 
@@ -89,7 +93,9 @@ export function ThemeGatekeeperModal({
 
             <div className="p-2.5 rounded-xl bg-[#0EC7F5]/15 border border-[#0EC7F5]/40 text-center flex items-center justify-center gap-2">
               <span className="text-xs font-black text-[#0EC7F5]">
-                {tx("Select all 3 squares containing a TRAFFIC LIGHT")}
+                {tx(
+                  `Select all ${activeCaptchaChallenge?.count || 3} squares containing ${activeCaptchaChallenge?.targetLabel || "a TRAFFIC LIGHT"}`,
+                )}
               </span>
             </div>
 
@@ -127,9 +133,10 @@ export function ThemeGatekeeperModal({
 
             <button
               onClick={verifyCaptcha}
-              className="w-full py-2.5 rounded-xl bg-[#0EC7F5] hover:bg-[#0bb2dc] text-[#08080A] font-black text-sm cursor-pointer"
+              disabled={isVerifying}
+              className="w-full py-2.5 rounded-xl bg-[#0EC7F5] hover:bg-[#0bb2dc] text-[#08080A] font-black text-sm cursor-pointer disabled:opacity-50"
             >
-              {tx("Verify I Am Human →")}
+              {isVerifying ? tx("Verifying with Server...") : tx("Verify I Am Human →")}
             </button>
           </>
         )}
@@ -157,7 +164,7 @@ export function ThemeGatekeeperModal({
             </p>
 
             <div className="p-4 rounded-2xl bg-[#181820] border border-[#FF6B1A]/60 text-sm font-bold text-[#F5E9D8] leading-relaxed">
-              {tx(activeMathProblem.question)}
+              {tx(activeMathProblem?.question || "Calculating permit parameters...")}
             </div>
 
             <form onSubmit={verifyMathProblem} className="space-y-3">
@@ -182,16 +189,26 @@ export function ThemeGatekeeperModal({
               {showMathHint && (
                 <div className="p-2.5 rounded-xl bg-[#FFE600]/15 border border-[#FFE600]/60 text-xs font-bold text-[#FFE600] flex items-center gap-1.5">
                   <HelpCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{tx(activeMathProblem.hint)}</span>
+                  <span>
+                    {tx(
+                      serverHint ||
+                        activeMathProblem?.hint ||
+                        "Follow departmental arithmetic standards.",
+                    )}
+                  </span>
                 </div>
               )}
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     soundFX.playChime();
-                    setShowMathHint(true);
+                    if (onRequestHint) {
+                      await onRequestHint();
+                    } else {
+                      setShowMathHint(true);
+                    }
                   }}
                   className="px-3 py-2.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#2A2A35] text-xs font-bold text-slate-200 cursor-pointer"
                 >
@@ -199,9 +216,12 @@ export function ThemeGatekeeperModal({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#1FE03F] hover:bg-[#19c435] text-[#08080A] font-black text-xs sm:text-sm cursor-pointer"
+                  disabled={isVerifying}
+                  className="flex-1 py-2.5 rounded-xl bg-[#1FE03F] hover:bg-[#19c435] text-[#08080A] font-black text-xs sm:text-sm cursor-pointer disabled:opacity-50"
                 >
-                  {tx("Submit to Illumination Committee")}
+                  {isVerifying
+                    ? tx("Consulting Committee...")
+                    : tx("Submit to Illumination Committee")}
                 </button>
               </div>
             </form>

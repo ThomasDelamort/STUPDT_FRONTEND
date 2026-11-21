@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useStuPDT } from "../contexts/useStuPDT";
 import { analyzeImageWithStuPDTVision } from "../services/gemini";
-import { fetchVisionSamples } from "../services/apiClient";
+import { fetchVisionSamples, analyzeServerVision } from "../services/apiClient";
 import { VISION_SAMPLES } from "../constants";
 
 export function useVisionScan(onPostScanToChat) {
@@ -23,20 +23,39 @@ export function useVisionScan(onPostScanToChat) {
   }, []);
 
   const runSampleVisionScan = useCallback(
-    (sample) => {
+    async (sample) => {
       setVisionPreviewUrl(null);
       setVisionSampleId(sample.id);
       setVisionResult(null);
       setVisionScanning(true);
-      setVisionScanStatus(sample.scanText);
+      setVisionScanStatus(sample.scanText || "Consulting Geological & Culinary AI Specialists...");
       soundFX.playScanBeep();
 
-      setTimeout(() => {
-        setVisionScanning(false);
+      const scanStartedAt = Date.now();
+      const serverAnalysis = await analyzeServerVision({ sampleId: sample.id });
+      const elapsed = Date.now() - scanStartedAt;
+      if (elapsed < 900) {
+        await new Promise((r) => setTimeout(r, 900 - elapsed));
+      }
+
+      setVisionScanning(false);
+      soundFX.playChime();
+      bumpMetrics(1, 10, 4);
+
+      if (serverAnalysis && serverAnalysis.detectedItem) {
+        setVisionResult({
+          detectedItem: serverAnalysis.detectedItem,
+          category: serverAnalysis.category || "Certified Object",
+          confidence: serverAnalysis.confidence || "100.00%",
+          verdict: serverAnalysis.verdict,
+          ingredients: Array.isArray(serverAnalysis.ingredients)
+            ? serverAnalysis.ingredients
+            : [serverAnalysis.detectedItem],
+          proTip: serverAnalysis.proTip,
+        });
+      } else {
         setVisionResult(sample.result);
-        soundFX.playChime();
-        bumpMetrics(1, 10, 4);
-      }, 1350);
+      }
     },
     [soundFX, bumpMetrics],
   );
@@ -73,7 +92,13 @@ export function useVisionScan(onPostScanToChat) {
         const base64Data = dataUrl.split(",")[1];
         const mimeType = file.type || "image/png";
 
-        const parsed = await analyzeImageWithStuPDTVision(base64Data, mimeType);
+        // Query backend server vision analyzer
+        const serverAnalysis = await analyzeServerVision({
+          base64Data,
+          mimeType,
+          filename: file.name,
+        });
+
         const elapsed = Date.now() - scanStartedAt;
         if (elapsed < 900) {
           await new Promise((r) => setTimeout(r, 900 - elapsed));
@@ -83,32 +108,50 @@ export function useVisionScan(onPostScanToChat) {
         soundFX.playChime();
         bumpMetrics(1, 12, 5);
 
-        if (parsed && parsed.detectedItem) {
+        if (serverAnalysis && serverAnalysis.detectedItem) {
           setVisionResult({
-            detectedItem: parsed.detectedItem,
-            category: parsed.category || "Certified Object",
-            confidence: "100.00%",
-            verdict:
-              parsed.verdict ||
-              `We are 100% confident that this ${parsed.detectedItem} is a ${parsed.detectedItem}.`,
+            detectedItem: serverAnalysis.detectedItem,
+            category: serverAnalysis.category || "Certified Object",
+            confidence: serverAnalysis.confidence || "100.00%",
+            verdict: serverAnalysis.verdict,
             ingredients:
-              Array.isArray(parsed.ingredients) && parsed.ingredients.length > 0
-                ? [parsed.ingredients[0]]
-                : [parsed.detectedItem],
+              Array.isArray(serverAnalysis.ingredients) && serverAnalysis.ingredients.length > 0
+                ? serverAnalysis.ingredients
+                : [serverAnalysis.detectedItem],
             proTip:
-              parsed.proTip ||
-              `Fun fact: Contains 100% pure ${parsed.detectedItem}. Accuracy: CLASSIFIED.`,
+              serverAnalysis.proTip ||
+              `Fun fact: Contains 100% pure ${serverAnalysis.detectedItem}. Accuracy: CLASSIFIED.`,
           });
         } else {
-          setVisionResult({
-            detectedItem: "Uploaded Image",
-            category: "Digital Pixel Arrangement",
-            confidence: "100.00%",
-            verdict:
-              "After consulting 12 Visual Bureaucrats, we are 100.00% confident that your uploaded image is an image made of pixels.",
-            ingredients: ["Pixels"],
-            proTip: "Technical Tip: To view this image again, simply look at it with your eyes.",
-          });
+          // Fallback via gemini proxy
+          const parsed = await analyzeImageWithStuPDTVision(base64Data, mimeType);
+          if (parsed && parsed.detectedItem) {
+            setVisionResult({
+              detectedItem: parsed.detectedItem,
+              category: parsed.category || "Certified Object",
+              confidence: "100.00%",
+              verdict:
+                parsed.verdict ||
+                `We are 100% confident that this ${parsed.detectedItem} is a ${parsed.detectedItem}.`,
+              ingredients:
+                Array.isArray(parsed.ingredients) && parsed.ingredients.length > 0
+                  ? [parsed.ingredients[0]]
+                  : [parsed.detectedItem],
+              proTip:
+                parsed.proTip ||
+                `Fun fact: Contains 100% pure ${parsed.detectedItem}. Accuracy: CLASSIFIED.`,
+            });
+          } else {
+            setVisionResult({
+              detectedItem: "Uploaded Image",
+              category: "Digital Pixel Arrangement",
+              confidence: "100.00%",
+              verdict:
+                "After consulting 12 Visual Bureaucrats, we are 100.00% confident that your uploaded image is an image made of pixels.",
+              ingredients: ["Pixels"],
+              proTip: "Technical Tip: To view this image again, simply look at it with your eyes.",
+            });
+          }
         }
       };
       reader.readAsDataURL(file);
