@@ -169,7 +169,7 @@ export async function analyzeServerVision({ sampleId, base64Data, mimeType, file
         method: "POST",
         body: JSON.stringify({ sampleId, base64Data, mimeType, filename }),
       },
-      9000,
+      20000,
     );
     return res.ok && res.data ? res.data : null;
   } catch {

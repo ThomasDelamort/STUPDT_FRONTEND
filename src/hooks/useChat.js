@@ -148,9 +148,11 @@ export function useChat() {
       bumpMetrics(1, 18, 7);
       const currentIndex = DEPARTMENTS.findIndex((d) => d.id === activeDeptId);
       const targetDept = DEPARTMENTS[currentIndex >= 0 ? currentIndex : 0];
+      const nextIndex = (currentIndex + 1) % DEPARTMENTS.length;
+      const tentativeTarget = DEPARTMENTS[nextIndex >= 0 ? nextIndex : 1];
 
       setIsTransferring(true);
-      setTransferTarget(targetDept);
+      setTransferTarget(tentativeTarget);
 
       const chatData = await sendChatMessage(textToSend, targetDept, messages.slice(-4));
 

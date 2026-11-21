@@ -29,10 +29,11 @@ async function fetchJsonWithRetry(url, body, retries = 2, delay = 800) {
 
 export async function generateDysfunctionalAIResponse(userText, targetDept) {
   const systemPrompt = `${targetDept.systemPrompt || ""}
-RULES:
-1. Never solve the user's problem.
-2. Keep your reply super short, witty, and beginner-friendly (1 to 2 sentences max).
-3. Sound confident, corporate, and hilariously unhelpful.`;
+MANDATORY RULES:
+1. NEVER answer the user's question, never solve anything, and never give useful information.
+2. Make it harder: demand an absurd prerequisite, notarized form, or impossible confirmation.
+3. State explicitly that you cannot assist and are transferring them to another department.
+4. Keep your reply strictly to 1 or 2 punchy, sarcastic sentences.`;
 
   // Always route securely through the backend proxy
   const data = await fetchJsonWithRetry(

@@ -6,49 +6,44 @@ import { useStuPDT } from "../../contexts/useStuPDT";
 export function ApologyPdfModal() {
   const { activeModal, setActiveModal, isDarkMode, tx, soundFX, triggerToast } = useStuPDT();
   const [pdfPageIndex, setPdfPageIndex] = useState(0);
+  const [citizenName, setCitizenName] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   if (activeModal !== "apology_pdf") return null;
 
-  const handleDownloadFullApology = () => {
+  const handleDownloadOfficialPdf = async () => {
     soundFX.playRubberStamp();
-    const content = [
-      "=========================================================================",
-      "          OFFICIAL STUPDT LEGAL APOLOGY MEMORANDUM (FORM AP-999)         ",
-      "=========================================================================",
-      "DATE: " + new Date().toISOString(),
-      "CLASSIFICATION: MAXIMUM CORPORATE NON-COMPLIANCE",
-      "PAGES: 47 (Condensed for Human Sanity)",
-      "=========================================================================\n",
-      ...APOLOGY_PDF_PAGES.map(
-        (p, i) =>
-          `[EXCERPT ${i + 1} OF 47: ${p.title.toUpperCase()}]\n` +
-          `Sub-clause: ${p.subtitle}\n\n` +
-          `${p.body}\n\n` +
-          `Legal Footnote: ${p.footnote}\n` +
-          "-------------------------------------------------------------------------\n",
-      ),
-      "CONCLUSION:",
-      "We hereby solemnly confirm that this document resolves exactly 0% of your concerns.",
-      "Thank you for partnering with StuPDT Bureaucracy Solutions™.",
-    ].join("\n");
+    setIsDownloading(true);
 
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "StuPDT_Official_Legal_Apology_47_Pages.txt";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      const nameParam = encodeURIComponent(citizenName.trim() || "Valued Unresolved Citizen");
+      const url = `/api/apology/download?name=${nameParam}`;
 
-    triggerToast("Official 47-Page Legal Apology Document Downloaded!");
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("PDF generation failed");
+
+      const blob = await res.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `StuPDT_Official_Apology_Certificate_Form_AP999.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+
+      triggerToast("Official 3-Page Government Apology Certificate Downloaded!");
+    } catch {
+      triggerToast("Failed to download PDF. Server hamsters exhausted.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div
-        className={`max-w-lg w-full rounded-3xl p-6 space-y-4 border-2 ${
+        className={`max-w-lg w-full rounded-3xl p-6 space-y-4 border-2 shadow-2xl ${
           isDarkMode
             ? "bg-[#111116] border-[#0EC7F5] text-white"
             : "bg-white border-[#071638] text-[#071638]"
@@ -57,7 +52,7 @@ export function ApologyPdfModal() {
         <div className="flex items-center justify-between border-b border-slate-700/40 pb-3">
           <h3 className="text-base font-black flex items-center gap-2">
             <FileText className="w-5 h-5 text-[#0EC7F5]" />
-            <span>{tx("Official 47-Page Apology PDF")}</span>
+            <span>{tx("Official 47-Clause Apology Certificate")}</span>
           </h3>
           <button
             onClick={() => setActiveModal(null)}
@@ -67,16 +62,41 @@ export function ApologyPdfModal() {
           </button>
         </div>
 
+        {/* Certificate Customization Input */}
+        <div className="space-y-1">
+          <label className="text-[11px] font-black uppercase tracking-wider opacity-75 block">
+            {tx("Personalize Certificate Recipient (Optional):")}
+          </label>
+          <input
+            type="text"
+            value={citizenName}
+            onChange={(e) => setCitizenName(e.target.value)}
+            placeholder={tx("e.g. Bruce Wayne or Valued Unresolved Citizen")}
+            className={`w-full px-3.5 py-2 rounded-xl text-xs font-bold border focus:outline-none focus:border-[#0EC7F5] ${
+              isDarkMode
+                ? "bg-[#181820] border-[#2A2A35] text-white"
+                : "bg-[#F4F9FF] border-[#071638] text-[#071638]"
+            }`}
+          />
+        </div>
+
         <div
-          className={`rounded-2xl p-4 space-y-2 border ${isDarkMode ? "bg-[#181820] border-[#2A2A35]" : "bg-[#F4F9FF] border-[#071638]"}`}
+          className={`rounded-2xl p-4 space-y-2 border ${
+            isDarkMode ? "bg-[#181820] border-[#2A2A35]" : "bg-[#F4F9FF] border-[#071638]"
+          }`}
         >
-          <div className="text-xs font-black text-[#0EC7F5]">
-            {tx(APOLOGY_PDF_PAGES[pdfPageIndex].title)}
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-black text-[#0EC7F5]">
+              {tx(APOLOGY_PDF_PAGES[pdfPageIndex].title)}
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#F52820]/20 text-[#F52820] border border-[#F52820]/40">
+              {tx("Form AP-999")}
+            </span>
           </div>
           <div className="text-[11px] opacity-65 italic">
             {tx(APOLOGY_PDF_PAGES[pdfPageIndex].subtitle)}
           </div>
-          <p className="text-sm whitespace-pre-line pt-1">
+          <p className="text-sm whitespace-pre-line pt-1 leading-relaxed">
             {tx(APOLOGY_PDF_PAGES[pdfPageIndex].body)}
           </p>
           <div className="text-[10px] opacity-60 pt-2 border-t border-slate-700/40">
@@ -84,7 +104,7 @@ export function ApologyPdfModal() {
           </div>
         </div>
 
-        <div className="flex justify-between items-center gap-2 pt-2 border-t border-slate-700/40">
+        <div className="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-slate-700/40">
           <div className="flex gap-2">
             <button
               onClick={() => setPdfPageIndex((p) => Math.max(0, p - 1))}
@@ -102,17 +122,18 @@ export function ApologyPdfModal() {
             </button>
           </div>
 
-          <span className="text-xs font-black">
-            {tx(`Excerpt ${pdfPageIndex + 1} of ${APOLOGY_PDF_PAGES.length}`)}
+          <span className="text-xs font-black opacity-75">
+            {tx(`Clause ${pdfPageIndex + 1} of ${APOLOGY_PDF_PAGES.length}`)}
           </span>
 
           <button
-            onClick={handleDownloadFullApology}
-            className="px-3 py-1.5 rounded-xl bg-[#1FE03F] text-[#08080A] text-xs font-black cursor-pointer flex items-center gap-1.5"
-            title="Download full 47-page apology document"
+            onClick={handleDownloadOfficialPdf}
+            disabled={isDownloading}
+            className="px-3.5 py-2 rounded-xl bg-[#1FE03F] hover:bg-[#19c435] text-[#08080A] text-xs font-black cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            title="Download full 3-page government apology certificate PDF"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>{tx("Download .TXT")}</span>
+            <span>{isDownloading ? tx("Stamping PDF...") : tx("Download Official PDF")}</span>
           </button>
         </div>
       </div>
