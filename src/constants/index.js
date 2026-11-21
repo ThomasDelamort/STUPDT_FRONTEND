@@ -3,3 +3,4 @@ export * from "./captcha";
 export * from "./departments";
 export * from "./vision";
 export * from "./accessibility";
+export * from "./assurance";

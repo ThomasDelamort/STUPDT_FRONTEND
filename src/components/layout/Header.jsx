@@ -12,6 +12,7 @@ import {
   Crown,
   Folder,
   Languages,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { RetroDarkLogo } from "../common/RetroDarkLogo";
@@ -40,6 +41,10 @@ export function Header({ onThemeClick }) {
   const openLanguageWheel = () => {
     soundFX.playChime();
     setActiveModal("language_wheel");
+  };
+  const openAssurance = () => {
+    soundFX.playChime();
+    setActiveModal("assurance");
   };
 
   if (isDarkMode) {
@@ -184,6 +189,14 @@ export function Header({ onThemeClick }) {
             </button>
 
             <button
+              onClick={openAssurance}
+              className="px-3 py-1.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#3888F2]/60 text-[#3888F2] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{tx("Assurance")}</span>
+            </button>
+
+            <button
               onClick={openLanguageWheel}
               title={tx("Spin the Wheel of Languages (you do not get to choose)")}
               className="px-3 py-1.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#FFE600]/60 text-[#FFE600] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
@@ -280,6 +293,13 @@ export function Header({ onThemeClick }) {
               className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-[#071638] text-white cursor-pointer"
             >
               {tx("Report")}
+            </button>
+            <button
+              onClick={openAssurance}
+              className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-white text-[#071638] border-2 border-[#071638] flex items-center gap-1 cursor-pointer"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{tx("Assurance")}</span>
             </button>
             <button
               onClick={openLanguageWheel}

@@ -1,4 +1,5 @@
 import { accessibilityCatalog } from "./catalog/accessibility.js";
+import { assuranceCatalog } from "./catalog/assurance.js";
 import { bureaucracyCatalog } from "./catalog/bureaucracy.js";
 import { departmentsCatalog } from "./catalog/departments.js";
 import { featuresCatalog } from "./catalog/features.js";
@@ -8,6 +9,7 @@ import { visionCatalog } from "./catalog/vision.js";
 
 const catalogs = [
   accessibilityCatalog,
+  assuranceCatalog,
   bureaucracyCatalog,
   departmentsCatalog,
   featuresCatalog,

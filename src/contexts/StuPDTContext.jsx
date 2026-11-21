@@ -239,7 +239,7 @@ export function StuPDTProvider({ children }) {
   }, [triggerToast]);
 
   // Active Modals
-  // 'org_about' | 'bureaucracy' | 'vision' | 'toolkit' | 'apology_pdf' | 'emotional' | 'loading_sim' | 'report' | 'grand_finale' | 'language_wheel'
+  // 'org_about' | 'bureaucracy' | 'vision' | 'toolkit' | 'apology_pdf' | 'emotional' | 'loading_sim' | 'report' | 'grand_finale' | 'language_wheel' | 'assurance'
   const [activeModal, setActiveModal] = useState(null);
 
   // Quotes

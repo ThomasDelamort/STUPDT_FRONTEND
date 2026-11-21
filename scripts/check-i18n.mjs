@@ -47,6 +47,7 @@ const DATA_RULES = [
     blocks: [/ingredients\s*:\s*\[/g],
   },
   { file: "src/constants/accessibility.js", keys: ["title", "subtitle", "body", "footnote"] },
+  { file: "src/constants/assurance.js", keys: ["text", "toast"] },
   { file: "src/constants/office.js", blocks: [/OFFICE_COPY\s*=\s*\{/g] },
   { file: "src/hooks/useChat.js", keys: ["label", "text", "blame", "timestamp"] },
   { file: "src/services/chatService.js", keys: ["label", "blame"] },

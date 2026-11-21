@@ -7,6 +7,7 @@ import {
   Crown,
   Wrench,
   RotateCcw,
+  ShieldCheck,
 } from "lucide-react";
 import { useStuPDT } from "../../contexts/useStuPDT";
 
@@ -114,6 +115,22 @@ export function ToolkitModal() {
               <HelpCircle className="w-4 h-4 text-[#F52820]" /> {tx("The Human Department")}
             </div>
             <p className="text-xs opacity-70 mt-1">{tx("Request to speak to a real human.")}</p>
+          </button>
+
+          <button
+            onClick={() => setActiveModal("assurance")}
+            className={`sm:col-span-2 p-3.5 rounded-2xl border text-left cursor-pointer ${
+              isDarkMode
+                ? "bg-[#181820] hover:bg-[#23232F] border-[#2A2A35]"
+                : "bg-[#F4F9FF] border-2 border-[#071638]"
+            }`}
+          >
+            <div className="font-black text-sm flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-[#3888F2]" /> {tx("Assurance Button")}
+            </div>
+            <p className="text-xs opacity-70 mt-1">
+              {tx("Seek reassurance. You will get more questions instead.")}
+            </p>
           </button>
 
           <button

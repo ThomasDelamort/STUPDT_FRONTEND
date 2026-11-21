@@ -450,6 +450,22 @@ body,
   }
 }
 
+/* Assurance popup: each question pops up fresh (the card is re-keyed per step) */
+.assurance-pop {
+  animation: assurance-pop 180ms ease-out;
+}
+
+@keyframes assurance-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @media (max-width: 480px) {
   .office-bubble__inner {
     padding: 3px 6px;
@@ -463,7 +479,8 @@ body,
 
 @media (prefers-reduced-motion: reduce) {
   .office-vignette,
-  .office-bubble__inner {
+  .office-bubble__inner,
+  .assurance-pop {
     animation: none !important;
   }
 }

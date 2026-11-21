@@ -38,6 +38,7 @@ import {
   ReportModal,
   GrandFinaleModal,
   LanguageWheelModal,
+  AssuranceModal,
 } from "./components/modals";
 
 function StuPDTApp() {
@@ -412,6 +413,7 @@ function StuPDTApp() {
       <ReportModal />
       <GrandFinaleModal onChoice={handleGrandFinaleChoice} />
       <LanguageWheelModal />
+      <AssuranceModal />
     </div>
   );
 }

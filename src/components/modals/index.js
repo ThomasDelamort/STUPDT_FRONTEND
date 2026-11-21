@@ -9,3 +9,4 @@ export { InfiniteLoadingModal } from "./InfiniteLoadingModal";
 export { ReportModal } from "./ReportModal";
 export { GrandFinaleModal } from "./GrandFinaleModal";
 export { LanguageWheelModal } from "./LanguageWheelModal";
+export { AssuranceModal } from "./AssuranceModal";
