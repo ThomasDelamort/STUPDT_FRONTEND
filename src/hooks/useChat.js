@@ -21,6 +21,10 @@ const INITIAL_MESSAGES = [
 
 const CHAT_STORAGE_KEY = "stupdt_chat_history";
 
+// How many recent messages the reply engine sees. Long enough that "Okay." and "WHAT?" can still
+// be traced back to the question that started the conversation.
+const HISTORY_WINDOW = 8;
+
 function loadStoredMessages() {
   try {
     const raw = sessionStorage.getItem(CHAT_STORAGE_KEY);
@@ -80,6 +84,11 @@ export function useChat() {
 
   const performDepartmentTransfer = useCallback(
     (nextDept, responseMessageText, customBlame, postCallback) => {
+      // Captured now, while it is still the department the customer is leaving. (Reading it
+      // from a state updater after setActiveDeptId(nextDept.id) always yielded the NEW dept,
+      // so every banner read "Transferred: X -> X".)
+      const prevDeptName = DEPARTMENTS.find((d) => d.id === activeDeptId)?.name || "Intake Desk";
+
       setIsTransferring(true);
       setTransferTarget(nextDept);
       soundFX.playTransferHold();
@@ -89,31 +98,27 @@ export function useChat() {
         setActiveDeptId(nextDept.id);
         soundFX.playChime();
 
-        setActiveDeptId((currentDeptId) => {
-          const prevDeptName =
-            DEPARTMENTS.find((d) => d.id === currentDeptId)?.name || "Intake Desk";
-          const newAiMsg = {
-            id: `ai-${Date.now()}-${Math.random()}`,
-            sender: "ai",
-            deptId: nextDept.id,
-            deptName: nextDept.name,
-            deptRole: nextDept.role,
-            deptBadge: nextDept.badge,
-            transferredFrom: prevDeptName,
-            text: responseMessageText,
-            confidence: isPremiumVIP ? "99.999% VIP" : "99.97%",
-            accuracy: "CLASSIFIED",
-            blame: customBlame || BLAME_TARGETS[Math.floor(Math.random() * BLAME_TARGETS.length)],
-            timestamp: "Just now",
-          };
-          setMessages((prev) => [...prev, newAiMsg]);
-          return nextDept.id;
-        });
+        // Built outside any state updater: updaters must be pure, and StrictMode runs them twice.
+        const newAiMsg = {
+          id: `ai-${Date.now()}-${Math.random()}`,
+          sender: "ai",
+          deptId: nextDept.id,
+          deptName: nextDept.name,
+          deptRole: nextDept.role,
+          deptBadge: nextDept.badge,
+          transferredFrom: prevDeptName,
+          text: responseMessageText,
+          confidence: isPremiumVIP ? "99.999% VIP" : "99.97%",
+          accuracy: "CLASSIFIED",
+          blame: customBlame || BLAME_TARGETS[Math.floor(Math.random() * BLAME_TARGETS.length)],
+          timestamp: "Just now",
+        };
+        setMessages((prev) => [...prev, newAiMsg]);
 
         if (postCallback) postCallback();
       }, 1050);
     },
-    [soundFX, isPremiumVIP],
+    [soundFX, isPremiumVIP, activeDeptId],
   );
 
   const handleSendMessage = useCallback(
@@ -152,7 +157,11 @@ export function useChat() {
       setIsTransferring(true);
       setTransferTarget(targetDept);
 
-      const chatData = await sendChatMessage(textToSend, targetDept, messages.slice(-4));
+      const chatData = await sendChatMessage(
+        textToSend,
+        targetDept,
+        messages.slice(-HISTORY_WINDOW),
+      );
 
       const nextDept = DEPARTMENTS.find((d) => d.id === chatData.departmentId) || {
         id: chatData.departmentId || "intake",

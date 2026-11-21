@@ -51,19 +51,22 @@ Type each message (or click the suggested reply chip above the input):
 
 | #   | You say                                           | StuPDT does                                                                                              |
 | --- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| 1   | `I have an exam tomorrow. Can you help me study?` | Transfers you to the "Academic Assistance Department"                                                    |
-| 2   | `Okay.`                                           | Asks you to **confirm you are a student**                                                                |
-| 3   | `Yes.`                                            | _"Congratulations! You're a student. We only assist non-students."_                                      |
-| 4   | `WHAT?`                                           | Apologizes sincerely. Your ticket number is unavailable because the **Ticket Number Department is down** |
-| 5   | `StuPDT, PLEASE JUST ANSWER MY QUESTION.`         | 🚨 **The Grand Finale**                                                                                  |
+| 1   | `I have an exam tomorrow. Can you help me study?` | Transfers you to Academic Assistance, which asks you to **confirm you are a student**                    |
+| 2   | `Yes, I am a student.` (or just `Okay.`)          | _"Congratulations! You're a student. We only assist non-students."_                                      |
+| 3   | `WHAT?`                                           | Apologizes sincerely. Your ticket number is unavailable because the **Ticket Number Department is down** |
+| 4   | `StuPDT, PLEASE JUST ANSWER MY QUESTION.`         | 🚨 **The Grand Finale**                                                                                  |
+
+The suggested-reply chip above the input always offers the next step, so you can click through the whole demo.
 
 ### Other things worth typing
 
-| Try                | Result                                                                        |
-| ------------------ | ----------------------------------------------------------------------------- |
-| `Fix my Wi-Fi`     | Confidence Without Competence™: _"Your Wi-Fi needs internet."_                |
-| `What time is it?` | Asks you to confirm in writing that you exist within **linear time**          |
-| Anything else      | Rotates to the next department, answered live by Gemini (or offline fallback) |
+| Try                          | Result                                                                                       |
+| ---------------------------- | -------------------------------------------------------------------------------------------- |
+| `Fix my Wi-Fi`               | Confidence Without Competence™: _"Your Wi-Fi needs internet."_                               |
+| `What time is it?`           | Asks you to confirm in writing that you exist within **linear time**                         |
+| `I want a refund`            | Executive Management apologizes, then forwards it to a department that forwards it back      |
+| `Can I speak to a manager?`  | Escalates to THE CEO AI, who has never answered a question and sends you back to the start   |
+| Anything else                | Moves to the next department down the chain, which quotes your own question back at you      |
 
 ---
 
@@ -158,23 +161,26 @@ StuPDT degrades gracefully, so the demo can't be broken by a missing backend:
  Your message
       │
       ▼
- ┌─────────────────────┐   ok    ┌──────────────┐
- │ Scripted triggers   │────────▶│  Canned,     │
- │ (exam, wifi, time,  │         │  deterministic│
- │  "just answer me")  │         │  reply        │
- └─────────┬───────────┘         └──────────────┘
-           │ no match
-           ▼
- ┌─────────────────────┐  fail
- │ POST /api/chat      │───────┐
- └─────────────────────┘       ▼
-                       ┌─────────────────────┐  fail
-                       │ Gemini (client key  │───────┐
-                       │ or /api/gemini)     │       ▼
-                       └─────────────────────┘  ┌──────────────┐
-                                                │ Offline reply│
-                                                └──────────────┘
+ ┌────────────────────────────────┐
+ │ Conversation engine (local)    │  ALWAYS runs. Detects the intent, picks the
+ │ services/conversationEngine.js │  next department, the blame, the next chip,
+ └───────────────┬────────────────┘  and writes a complete offline reply.
+                 │
+                 ▼
+ ┌─────────────────────┐   ok: the backend's reply wins (field by field)
+ │ POST /api/chat      │──────────────────────────────────────────────┐
+ └──────────┬──────────┘                                              │
+            │ fail                                                    │
+            ▼                                                         ▼
+ ┌─────────────────────┐   ok: Gemini's text, in the voice of    ┌───────────┐
+ │ POST /api/gemini    │───────────────────────────────────────▶ │   Reply   │
+ └──────────┬──────────┘   the department the engine chose       └───────────┘
+            │ fail                                                    ▲
+            ▼                                                         │
+   the engine's own reply ────────────────────────────────────────────┘
 ```
+
+Routing is decided by the engine in every case, so the demo flow and the department rotation work with no backend and no API key. The one scripted exception is the Grand Finale, which `useChat` triggers before any of this runs.
 
 > **Backend note:** the `/api/chat`, `/api/bureaucracy/submit`, `/api/metrics`, `/api/health` and `/api/gemini` endpoints are **not included in this repo**. The frontend treats them as optional, and the status pills show whether a backend is reachable. If you run a FastAPI backend on port `8000` (e.g. `pnpm backend`, which expects a sibling `../STUPDT_BACKEND` folder with its own `.venv`), the Vite dev server proxies `/api` to it automatically.
 
@@ -191,6 +197,7 @@ The project uses **pnpm** and **Vite+** (`vp`).
 | `pnpm build`   | Type-check with `tsc -b`, then production build                                               |
 | `pnpm preview` | Serve the production build locally                                                            |
 | `pnpm lint`    | Lint with type-aware rules (`react/rules-of-hooks` is an error)                               |
+| `pnpm test`    | Run the unit tests (reply engine: intents, routing, replies, no-backend regression)           |
 | `pnpm sprites` | Rebuild THE OFFICE sprite atlases from `art/source` (dev-only `sharp`; outputs are committed) |
 
 ### Deploying to Vercel (GitHub Actions)
@@ -267,7 +274,8 @@ STUPDT_FRONTEND/
     ├── i18n/                 # Wheel of Languages: language registry, translate(),
     │                         #   pigLatin, spinMath, translations/catalog/*
     ├── services/             # apiClient, chatService, gemini, bureaucracyService,
-    │                         #   telemetryService, offlineReplies
+    │                         #   telemetryService, conversationEngine (intent, routing,
+    │                         #   offline replies) + replyPools + offlineReplies (+ .test.js)
     ├── utils/                # braille.js, soundEngine.js (Web Audio synthesis)
     │   └── office/           # THE OFFICE simulation: engine, actor, director,
     │                         #   activities, pathing, props, bubbles, dialogue,

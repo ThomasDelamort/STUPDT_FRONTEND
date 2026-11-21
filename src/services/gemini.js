@@ -1,4 +1,3 @@
-import { getOfflineDepartmentReply } from "./offlineReplies";
 import { API_BASE_URL } from "./apiClient";
 
 async function fetchJsonWithRetry(url, body, retries = 2, delay = 800) {
@@ -12,6 +11,13 @@ async function fetchJsonWithRetry(url, body, retries = 2, delay = 800) {
     // Fail fast on 404/405/401/403 so unconfigured or local Vite setups fall back immediately
     if (res.status === 404 || res.status === 405 || res.status === 401 || res.status === 403) {
       return null;
+    }
+    // The Vite dev proxy answers 503 {status: "offline"} when no backend is running.
+    // Retrying cannot help, and costs every message a delay before the offline reply.
+    if (res.status === 503) {
+      const offline = await res.json().then((j) => j?.status === "offline", () => false);
+      if (offline) return null;
+      throw new Error("HTTP 503");
     }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
@@ -27,6 +33,10 @@ async function fetchJsonWithRetry(url, body, retries = 2, delay = 800) {
   }
 }
 
+/**
+ * Live LLM reply in the voice of `targetDept`, or null when none is available
+ * (no backend, no key, rate-limited). The caller owns the offline fallback.
+ */
 export async function generateDysfunctionalAIResponse(userText, targetDept) {
   const systemPrompt = `${targetDept.systemPrompt || ""}
 RULES:
@@ -51,7 +61,7 @@ RULES:
     return candidateText.trim();
   }
 
-  return getOfflineDepartmentReply(userText, targetDept);
+  return null;
 }
 
 export async function analyzeImageWithStuPDTVision(base64Data, mimeType) {

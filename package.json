@@ -9,6 +9,7 @@
     "dev:backend": "cd ../STUPDT_BACKEND && .venv/bin/uvicorn app.main:app --reload --port 8000",
     "build": "tsc -b && vp build",
     "lint": "vp lint",
+    "test": "vp test run",
     "preview": "vp preview",
     "sprites": "node scripts/build-sprites.mjs"
   },

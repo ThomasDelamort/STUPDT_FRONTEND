@@ -1,11 +1,31 @@
 import { apiFetch } from "./apiClient";
 import { generateDysfunctionalAIResponse } from "./gemini";
+import { planTurn } from "./conversationEngine";
 
 /**
- * Dispatches a chat message to the backend /api/chat if online,
- * otherwise falls back to Gemini API proxy or offline replies.
+ * Resolves one customer message into a department reply.
+ *
+ * The engine ALWAYS plans the turn locally: which department the ticket moves to,
+ * a complete offline reply, the blame and the quick-reply chip. Better text then
+ * replaces the offline reply if a source is available:
+ *
+ *   1. POST /api/chat   a deployed backend; its response wins field by field
+ *   2. /api/gemini      live LLM text, in the voice of the department we routed to
+ *   3. the engine's own reply (no backend, no API key: the zero-setup default)
  */
 export async function sendChatMessage(userText, targetDept, history = []) {
+  const plan = planTurn({ userText, currentDept: targetDept, history });
+
+  const resolved = {
+    reply: plan.reply,
+    departmentId: plan.dept.id,
+    departmentName: plan.dept.name,
+    departmentRole: plan.dept.role,
+    departmentBadge: plan.dept.badge,
+    blame: plan.blame,
+    suggestedQuickReply: plan.suggestedQuickReply ?? undefined,
+  };
+
   try {
     const res = await apiFetch("/api/chat", {
       method: "POST",
@@ -17,27 +37,15 @@ export async function sendChatMessage(userText, targetDept, history = []) {
     });
 
     if (res.ok && res.data?.reply) {
-      return res.data;
+      return { ...resolved, ...res.data };
     }
   } catch {
     // Backend offline
   }
 
-  // Fallback to Gemini proxy or offline replies
-  const fallbackReply = await generateDysfunctionalAIResponse(userText, targetDept);
+  const generated = await generateDysfunctionalAIResponse(userText, plan.dept);
   return {
-    reply:
-      typeof fallbackReply === "string"
-        ? fallbackReply
-        : fallbackReply?.reply || "We are experiencing technical indifference.",
-    departmentId: targetDept?.id || "intake",
-    departmentName: targetDept?.name || "StuPDT Assistant #001",
-    departmentRole: targetDept?.role || "Frontline Referral Specialist",
-    departmentBadge: targetDept?.badge || "DEPT #001",
-    blame: "Mercury Retrograde",
-    suggestedQuickReply: {
-      label: 'Trigger Finale: "StuPDT, PLEASE JUST ANSWER MY QUESTION."',
-      value: "StuPDT, PLEASE JUST ANSWER MY QUESTION.",
-    },
+    ...resolved,
+    reply: generated || resolved.reply || "We are experiencing technical indifference.",
   };
 }
