@@ -103,13 +103,16 @@ export function ApologyPdfModal() {
           </div>
 
           <span className="text-xs font-black">
-            {tx(`Excerpt ${pdfPageIndex + 1} of ${APOLOGY_PDF_PAGES.length}`)}
+            {tx("Excerpt {page} of {total}", {
+              page: pdfPageIndex + 1,
+              total: APOLOGY_PDF_PAGES.length,
+            })}
           </span>
 
           <button
             onClick={handleDownloadFullApology}
             className="px-3 py-1.5 rounded-xl bg-[#1FE03F] text-[#08080A] text-xs font-black cursor-pointer flex items-center gap-1.5"
-            title="Download full 47-page apology document"
+            title={tx("Download full 47-page apology document")}
           >
             <Download className="w-3.5 h-3.5" />
             <span>{tx("Download .TXT")}</span>

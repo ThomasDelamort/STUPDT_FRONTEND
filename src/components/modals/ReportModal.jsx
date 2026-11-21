@@ -91,7 +91,7 @@ export function ReportModal() {
             <span className="text-[10px] font-black uppercase text-[#FF6B1A]">
               {tx("Satisfaction")}
             </span>
-            <div className="text-2xl font-black">{tx(`${String(userSatisfaction)}%`)}</div>
+            <div className="text-2xl font-black">{tx("{value}%", { value: userSatisfaction })}</div>
           </div>
         </div>
 

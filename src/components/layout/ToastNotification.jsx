@@ -16,7 +16,9 @@ export function ToastNotification() {
       }`}
     >
       <AlertTriangle className="w-5 h-5 text-[#FFE600] shrink-0" />
-      <p className="text-xs font-extrabold leading-snug">{tx(toastNotification)}</p>
+      <p className="text-xs font-extrabold leading-snug">
+        {tx(toastNotification.text, toastNotification.vars)}
+      </p>
     </div>
   );
 }

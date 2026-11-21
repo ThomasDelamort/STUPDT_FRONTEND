@@ -111,6 +111,17 @@ The app starts in a dark crosshair-poster theme. Switching to **Light Mode** req
 
 A 47-page apology PDF, Emotional Support Mode (StuPDT needs _you_ to comfort _it_), a 99% Loading Simulator, a Human Department that is being replaced by AI, and **Premium Nothing™** for ₱999 imaginary pesos.
 
+### 🏢 THE OFFICE (live staff feed)
+
+Under the chat there is a live, sprite-animated break room with four staffers, **Gab, Neal, Drake and Janus**. When nobody is chatting they mind their own business: table tennis (1v1 and 2v2), chess, pull-ups, the punching bag, weights, the computer, a bean-bag nap, and the occasional all-hands couch summit.
+
+**Send a message and they drop everything.** Everyone startles, runs to a huddle and **argues about your message** in speech bubbles: the Blame Game, Ticket Hot Potato, Rock-Paper-Scissors for who has to answer, a Vote, or Neal opening The Laptop. The argument is picked by your prompt's text, so the same prompt gets the same arc. Once the real reply lands they deliver a verdict that blames the responding department, then wander back to doing nothing. Send another prompt mid-argument and you get _"Another one?!"_ and a bigger ticket pile. Trigger the Grand Finale and it's **Code Red**.
+
+- The staff quote the incoming ticket while they gather. Fast replies bring a department verdict within about 2.5 seconds. During a long transfer the committee keeps talking. The Office runs locally and makes no extra API calls.
+- Accessibility: the bubbles are mirrored in a caption strip (`aria-live`). It respects Braille mode, mute, dark/light themes and `prefers-reduced-motion`. If the office is off-screen when you send, a chip offers to scroll to it (it never auto-scrolls).
+- Add `?office-debug` to see station anchors, furniture boundaries, planned paths and sprite pivots. The controls and in-place animation player sit below the feed. Press `1–9` to force a scene, `H` for a prompt, `R` for a reply or `C` for Code Red.
+- Design notes, calibration and the acceptance checks are in [`docs/OFFICE_NOTES.md`](docs/OFFICE_NOTES.md). The frames that would replace the faked poses are in [`docs/OFFICE_ART_WISHLIST.md`](docs/OFFICE_ART_WISHLIST.md).
+
 ### 📊 Live chaos telemetry
 
 Departments consulted, internal meetings, minutes wasted, user satisfaction (floors at **-999**) and a Chaos Meter. Reach 100% and a national bureaucratic emergency is declared. Open **Report** to see your damage.
@@ -166,12 +177,13 @@ StuPDT degrades gracefully, so the demo can't be broken by a missing backend:
 
 The project uses **pnpm** and **Vite+** (`vp`).
 
-| Command        | What it does                                                    |
-| -------------- | --------------------------------------------------------------- |
-| `pnpm dev`     | Start the dev server on port `5173`                             |
-| `pnpm build`   | Type-check with `tsc -b`, then production build                 |
-| `pnpm preview` | Serve the production build locally                              |
-| `pnpm lint`    | Lint with type-aware rules (`react/rules-of-hooks` is an error) |
+| Command        | What it does                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| `pnpm dev`     | Start the dev server on port `5173`                                                           |
+| `pnpm build`   | Type-check with `tsc -b`, then production build                                               |
+| `pnpm preview` | Serve the production build locally                                                            |
+| `pnpm lint`    | Lint with type-aware rules (`react/rules-of-hooks` is an error)                               |
+| `pnpm sprites` | Rebuild THE OFFICE sprite atlases from `art/source` (dev-only `sharp`; outputs are committed) |
 
 ---
 
@@ -185,12 +197,21 @@ STUPDT_FRONTEND/
 ├── .env.example
 ├── public/
 │   └── favicon.svg
+├── art/
+│   ├── source/               # Original sprite sheets + office image (not bundled)
+│   └── qa/contact-sheet.png  # Every extracted frame, pivots + baselines
+├── scripts/
+│   └── build-sprites.mjs     # `pnpm sprites`: sheets -> atlases, WebP, prop patches
+├── docs/                     # OFFICE_NOTES.md, OFFICE_ART_WISHLIST.md
 └── src/
     ├── main.jsx
     ├── App.jsx               # Layout, Theme Gatekeeper logic, ErrorBoundary
     │
+    ├── assets/office/        # office.webp, prop patches, sprites/<name>.png + .json
+    │
     ├── components/
     │   ├── chat/             # ChatWindow, ChatMessage, ChatInput, QuickStarters
+    │   ├── office/           # OfficeScene (THE OFFICE card), OfficeDebug
     │   ├── layout/           # Header, BrailleBanner, EmergencyBanner, QuoteBar,
     │   │                     #   StatusPills, ToastNotification
     │   ├── modals/           # Bureaucracy, Vision, OrgAbout, Toolkit, Report,
@@ -199,14 +220,18 @@ STUPDT_FRONTEND/
     │   └── common/           # RetroDarkLogo, SampleIllustrationSVG
     │
     ├── constants/            # departments, captcha + legal math, vision samples,
-    │                         #   quotes, accessibility data
+    │                         #   quotes, accessibility data, office (roster, stations,
+    │                         #   scenes, nav, occluders, poses, dialogue)
     ├── contexts/
     │   └── StuPDTContext.jsx # Global state: theme, a11y, metrics, modals, sound
     ├── hooks/                # useChat, useVisionScan, useAudio, useMetrics,
-    │                         #   useTheme, useToast
+    │                         #   useTheme, useToast, useOfficeEngine
     ├── services/             # apiClient, chatService, gemini, bureaucracyService,
     │                         #   telemetryService, offlineReplies
     ├── utils/                # braille.js, soundEngine.js (Web Audio synthesis)
+    │   └── office/           # THE OFFICE simulation: engine, actor, director,
+    │                         #   activities, pathing, props, bubbles, dialogue,
+    │                         #   atlas, rng, timing
     └── styles/index.css
 ```
 
@@ -216,6 +241,7 @@ STUPDT_FRONTEND/
 - **Persistence:** Chat history, metrics and VIP status are kept in `sessionStorage`, so a refresh keeps your suffering. The ErrorBoundary offers a _Clear Corrupted Storage & Reload_ button.
 - **Resilience:** Every network call fails soft. 401/403/404/405 responses short-circuit straight to the offline fallback instead of retrying.
 - **Sound:** All audio is synthesized with the Web Audio API in `soundEngine.js`. There are no audio files to load.
+- **THE OFFICE:** DOM sprites in a 1672×941 world scaled by one transform. One `requestAnimationFrame` loop writes transforms imperatively, with no React state per frame. A fixed-timestep simulation handles A* pathing, a scene director and the huddle choreography, and furniture occludes sprites through y-sorted, clipped copies of the office image. Huddles are derived from `messages`, so `useChat` is untouched.
 
 ---
 

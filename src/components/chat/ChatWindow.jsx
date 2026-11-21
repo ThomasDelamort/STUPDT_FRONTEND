@@ -38,7 +38,7 @@ export function ChatWindow({
             }`}
           />
           <span className="text-xs sm:text-sm font-black tracking-wide truncate">
-            {tx(`LIVE AGENT: ${activeDepartmentObj.name}`)}
+            {tx("LIVE AGENT: {name}", { name: activeDepartmentObj.name })}
           </span>
           <span
             className={`hidden sm:inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${
@@ -86,7 +86,7 @@ export function ChatWindow({
               />
               <div>
                 <p className="text-xs sm:text-sm font-black">
-                  {tx(`Transferring you to ${transferTarget.name}...`)}
+                  {tx("Transferring you to {name}...", { name: transferTarget.name })}
                 </p>
                 <p className="text-xs opacity-80 font-medium">
                   {tx(
@@ -130,7 +130,9 @@ export function ChatWindow({
                 />
               </div>
               <span className="italic">
-                {tx(`${activeDepartmentObj.name} is pretending to review your paperwork...`)}
+                {tx("{name} is pretending to review your paperwork...", {
+                  name: activeDepartmentObj.name,
+                })}
               </span>
             </div>
           </div>

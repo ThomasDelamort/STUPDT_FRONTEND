@@ -7,3 +7,463 @@ body,
 #root {
   min-height: 100%;
 }
+
+/* ==========================================================================
+   THE OFFICE (src/components/office). Sprites/props live in WORLD space
+   (1672x941, scaled by one transform); bubbles/tags live in an unscaled
+   overlay so text stays legible. Only transform/opacity animate.
+   ========================================================================== */
+.office-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1672px;
+  height: 941px;
+  transform-origin: 0 0;
+  contain: layout paint;
+}
+
+.office-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.office-occluder,
+.office-patch,
+.office-bag,
+.office-glow {
+  position: absolute;
+  pointer-events: none;
+}
+
+.office-occluder {
+  inset: 0;
+  background-size: 1672px 941px;
+}
+
+.office-sprite {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-repeat: no-repeat;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.office-shadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 56px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
+  transform-origin: 28px 8px;
+  z-index: 2;
+  will-change: transform;
+}
+
+.office-glow {
+  background: linear-gradient(
+    160deg,
+    rgba(120, 190, 255, 0.85),
+    rgba(14, 199, 245, 0.35) 55%,
+    rgba(90, 60, 255, 0.5)
+  );
+  mix-blend-mode: screen;
+}
+
+.office-ball {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff, #f3efe6 60%, #c9c2b4);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.55);
+  z-index: 1800;
+  will-change: transform, opacity;
+}
+
+.office-ball-shadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 902;
+}
+
+.office-paddle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 16px;
+  height: 26px;
+  transform-origin: 8px 22px;
+  will-change: transform;
+}
+
+.office-paddle::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 16px;
+  height: 17px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ff6b5f, #d42419 70%);
+  box-shadow: inset 0 0 0 1.5px #5a0f0b;
+}
+
+.office-paddle::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 15px;
+  width: 4px;
+  height: 10px;
+  border-radius: 2px;
+  background: #b98a55;
+}
+
+.office-dumbbell {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 34px;
+  height: 14px;
+  will-change: transform;
+  background: linear-gradient(#e8e3da, #9d978d) center / 18px 4px no-repeat;
+}
+
+.office-dumbbell::before,
+.office-dumbbell::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 9px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #1b1b20, #3a3a44 55%, #141418);
+  box-shadow: inset 0 0 0 1px #000;
+}
+
+.office-dumbbell::before {
+  left: 0;
+}
+
+.office-dumbbell::after {
+  right: 0;
+}
+
+.office-ticket {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 18px;
+  padding-top: 3px;
+  border-radius: 2px;
+  background: linear-gradient(#fffdf5, #ece6d6);
+  border-top: 3px solid #f52820;
+  color: #071638;
+  font:
+    800 8px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  text-align: center;
+  box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.45);
+  will-change: transform;
+}
+
+.office-pile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 18px;
+}
+
+.office-ticket--pile {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.office-zzz {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1850;
+  color: #bfe9ff;
+  font:
+    900 20px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  text-shadow: 0 0 6px rgba(14, 199, 245, 0.8);
+  will-change: transform, opacity;
+}
+
+/* --- overlay (screen px) ------------------------------------------------- */
+.office-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.office-tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: rgba(8, 8, 10, 0.78);
+  color: var(--accent);
+  font:
+    900 9px/1.4 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.office-mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: #ffe600;
+  color: #08080a;
+  border: 2px solid #08080a;
+  font:
+    900 13px/1.1 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  text-align: center;
+  opacity: 0;
+  box-shadow: 2px 2px 0 #08080a;
+  will-change: transform;
+}
+
+.office-bubble {
+  --tail: 0px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: min(46%, 220px);
+  opacity: 0;
+  transition: opacity 160ms ease-out;
+  will-change: transform, opacity;
+  z-index: 2;
+}
+
+.office-bubble__inner {
+  position: relative;
+  padding: 5px 8px;
+  border-radius: 10px;
+  background: #fffdf5;
+  color: #08080a;
+  border: 2px solid #08080a;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+  font:
+    700 11px/1.25 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.office-bubble__inner::after {
+  content: "";
+  position: absolute;
+  left: calc(50% + var(--tail) - 6px);
+  bottom: -8px;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  border-right: 2px solid #08080a;
+  border-bottom: 2px solid #08080a;
+  transform: rotate(45deg);
+}
+
+.office-bubble__name {
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.office-bubble__off {
+  color: transparent;
+}
+
+.office-bubble--pop .office-bubble__inner {
+  animation: office-pop 180ms ease-out;
+}
+
+/* heat escalates: thicker/colder outline -> orange -> red jagged burst */
+.office-bubble[data-heat="1"] .office-bubble__inner {
+  border-color: #ff6b1a;
+}
+
+.office-bubble[data-heat="2"] .office-bubble__inner {
+  border-color: #f52820;
+  box-shadow: 3px 3px 0 #f52820;
+  animation:
+    office-pop 180ms ease-out,
+    office-shake 260ms ease-in-out 2;
+}
+
+.office-bubble[data-heat="3"] .office-bubble__inner {
+  border-color: #f52820;
+  box-shadow: 3px 3px 0 #08080a;
+  animation:
+    office-pop 180ms ease-out,
+    office-shake 200ms ease-in-out 4;
+}
+
+/* the burst hangs off the OUTER bubble (a stacking context via will-change)
+   so the inner's shake animation can't paint it over the bubble body */
+.office-bubble[data-heat="3"]::before {
+  content: "";
+  position: absolute;
+  inset: -7px -9px;
+  z-index: -1;
+  background: #f52820;
+  clip-path: polygon(
+    0% 18%,
+    8% 0%,
+    16% 14%,
+    26% 0%,
+    34% 12%,
+    44% 0%,
+    52% 12%,
+    62% 0%,
+    70% 14%,
+    80% 0%,
+    88% 12%,
+    100% 6%,
+    94% 30%,
+    100% 50%,
+    94% 70%,
+    100% 94%,
+    88% 86%,
+    78% 100%,
+    70% 86%,
+    60% 100%,
+    50% 86%,
+    40% 100%,
+    32% 86%,
+    22% 100%,
+    14% 86%,
+    0% 96%,
+    6% 72%,
+    0% 50%,
+    6% 30%
+  );
+}
+
+.office-bubble[data-heat="1"] .office-bubble__inner::after,
+.office-bubble[data-heat="2"] .office-bubble__inner::after,
+.office-bubble[data-heat="3"] .office-bubble__inner::after {
+  border-color: inherit;
+}
+
+.office-bubble[data-kind="ambient"] .office-bubble__inner,
+.office-bubble[data-kind="rep"] .office-bubble__inner {
+  padding: 3px 7px;
+  font-size: 10px;
+  font-style: italic;
+  background: #f4f9ff;
+}
+
+.office-bubble[data-kind="rep"] .office-bubble__inner {
+  font-style: normal;
+  font-weight: 900;
+  background: #1fe03f;
+}
+
+.office-bubble[data-kind="verdict"] .office-bubble__inner {
+  background: #ffe600;
+}
+
+.office-bubble[data-kind="panic"] .office-bubble__inner {
+  background: #f52820;
+  color: #fff;
+}
+
+.office-bubble--still .office-bubble__inner {
+  animation: none !important;
+}
+
+.office-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(245, 40, 32, 0) 45%,
+    rgba(245, 40, 32, 0.55) 100%
+  );
+  animation: office-redpulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes office-pop {
+  from {
+    transform: scale(0.6) translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes office-shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-2px) rotate(-1.5deg);
+  }
+  75% {
+    transform: translateX(2px) rotate(1.5deg);
+  }
+}
+
+@keyframes office-redpulse {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .office-bubble__inner {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+  .office-tag {
+    font-size: 7.5px;
+    padding: 0 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .office-vignette,
+  .office-bubble__inner {
+    animation: none !important;
+  }
+}

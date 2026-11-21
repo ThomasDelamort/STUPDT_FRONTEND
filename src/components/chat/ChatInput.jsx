@@ -21,7 +21,7 @@ export function ChatInput({ inputValue, setInputValue, onSendMessage, isTransfer
           soundFX.playScanBeep();
           setActiveModal("vision");
         }}
-        title="Open StuPDT Vision™ AI Image Detector"
+        title={tx("Open StuPDT Vision™ AI Image Detector")}
         className={`p-2.5 rounded-xl border transition cursor-pointer shrink-0 ${
           isDarkMode
             ? "bg-[#181820] hover:bg-[#23232F] border-[#1FE03F]/50 text-[#1FE03F]"

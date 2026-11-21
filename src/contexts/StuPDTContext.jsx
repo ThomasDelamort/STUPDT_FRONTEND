@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { StuPDTContext } from "./StuPDTContextInstance";
 import { toBraille } from "../utils/braille";
+import { translate } from "../i18n/translate";
+import { DEFAULT_LANGUAGE_ID, getLanguage, isKnownLanguage } from "../i18n/languages";
 import { soundFX } from "../utils/soundEngine";
 import { checkBackendHealth, fetchDepartments, fetchQuotes } from "../services/apiClient";
 import { syncTelemetryMetrics, fetchGlobalMetrics } from "../services/telemetryService";
@@ -9,6 +11,7 @@ import { DEPARTMENTS, STUPID_QUOTES } from "../constants";
 const STORAGE_KEYS = {
   METRICS: "stupdt_telemetry_metrics",
   VIP: "stupdt_is_vip",
+  LANGUAGE: "stupdt_language",
 };
 
 function getStoredJson(key, fallback) {
@@ -34,8 +37,30 @@ export function StuPDTProvider({ children }) {
   const [brailleMode, setBrailleMode] = useState(false);
   const [signLanguageMode, setSignLanguageMode] = useState(false);
 
-  // Translation helper: turns visible text to Braille when Braille Mode is ON
-  const tx = useCallback((text) => (brailleMode ? toBraille(text) : text), [brailleMode]);
+  // Language: chosen by the Wheel of Languages, never by the user directly.
+  const [language, setLanguage] = useState(() => {
+    const stored = getStoredJson(STORAGE_KEYS.LANGUAGE, DEFAULT_LANGUAGE_ID);
+    return isKnownLanguage(stored) ? stored : DEFAULT_LANGUAGE_ID;
+  });
+
+  useEffect(() => {
+    setStoredJson(STORAGE_KEYS.LANGUAGE, language);
+    const { htmlLang } = getLanguage(language);
+    document.documentElement.lang = htmlLang;
+    document.documentElement.dir = "ltr";
+  }, [language]);
+
+  // Text helper used by every visible string: translates into the active
+  // language first (English source text is the key, missing entries fall back
+  // to English; `vars` fills {placeholders}), then turns it into Braille when
+  // Braille Mode is ON.
+  const tx = useCallback(
+    (text, vars) => {
+      const translated = translate(text, language, vars);
+      return brailleMode ? toBraille(translated) : translated;
+    },
+    [brailleMode, language],
+  );
 
   // Sound Engine
   const [isMuted, setIsMuted] = useState(false);
@@ -175,10 +200,11 @@ export function StuPDTProvider({ children }) {
 
   // Toast Notification
   const [toastNotification, setToastNotification] = useState(null);
-  const triggerToast = useCallback((msg) => {
-    setToastNotification(msg);
+  const triggerToast = useCallback((text, vars) => {
+    const notification = { text, vars };
+    setToastNotification(notification);
     setTimeout(() => {
-      setToastNotification((curr) => (curr === msg ? null : curr));
+      setToastNotification((curr) => (curr === notification ? null : curr));
     }, 4500);
   }, []);
 
@@ -213,7 +239,7 @@ export function StuPDTProvider({ children }) {
   }, [triggerToast]);
 
   // Active Modals
-  // 'org_about' | 'bureaucracy' | 'vision' | 'toolkit' | 'apology_pdf' | 'emotional' | 'loading_sim' | 'report' | 'grand_finale'
+  // 'org_about' | 'bureaucracy' | 'vision' | 'toolkit' | 'apology_pdf' | 'emotional' | 'loading_sim' | 'report' | 'grand_finale' | 'language_wheel'
   const [activeModal, setActiveModal] = useState(null);
 
   // Quotes
@@ -232,6 +258,10 @@ export function StuPDTProvider({ children }) {
     signLanguageMode,
     setSignLanguageMode,
     tx,
+
+    // Language (Wheel of Languages)
+    language,
+    setLanguage,
 
     // Audio
     isMuted,

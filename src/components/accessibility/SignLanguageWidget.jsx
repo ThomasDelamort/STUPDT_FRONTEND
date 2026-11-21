@@ -54,7 +54,7 @@ export function SignLanguageWidget({ latestAiMessageText }) {
         <button
           onClick={() => setSignLanguageMode(false)}
           className="p-0.5 hover:bg-black/20 rounded cursor-pointer"
-          title="Close Sign Language Interpreter"
+          title={tx("Close Sign Language Interpreter")}
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -87,7 +87,7 @@ export function SignLanguageWidget({ latestAiMessageText }) {
               isDarkMode ? "bg-[#0EC7F5]/20 text-[#0EC7F5]" : "bg-[#FFE600] text-[#071638]"
             }`}
           >
-            {tx(`Signing: "${signWords[signWordIdx] || "..."}"`)}
+            {tx('Signing: "{word}"', { word: signWords[signWordIdx] || "..." })}
           </div>
         </div>
 
