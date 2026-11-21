@@ -38,7 +38,17 @@ export function usePrefersReducedMotion() {
  *   onDebug?: (snap: any) => void,
  * }} opts
  */
-export function useOfficeEngine({ sceneRef, worldRef, rootRef, overlayRef, tx, sound, reducedMotion, debug, onDebug }) {
+export function useOfficeEngine({
+  sceneRef,
+  worldRef,
+  rootRef,
+  overlayRef,
+  tx,
+  sound,
+  reducedMotion,
+  debug,
+  onDebug,
+}) {
   /** @type {React.MutableRefObject<OfficeEngine | null>} */
   const engineRef = useRef(null);
   const [ready, setReady] = useState(false);

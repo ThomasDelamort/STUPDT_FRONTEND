@@ -145,7 +145,12 @@ export class Director {
     for (const actor of this.engine.actors) {
       const slot = plan.get(actor);
       const cur = actor.activity;
-      const same = cur && slot && cur.activity === slot.activity && actor.member && actor.member.spotId === slot.spotId;
+      const same =
+        cur &&
+        slot &&
+        cur.activity === slot.activity &&
+        actor.member &&
+        actor.member.spotId === slot.spotId;
       if (same) {
         // stays put: carry the member over into the new scene's activity list
         continue;
@@ -158,7 +163,10 @@ export class Director {
     for (const [group, members] of byGroup) {
       const activity = OFFICE_GROUPS[group].activity;
       const existing = this.activities.find(
-        (a) => !a.finished && a.activity === activity && members.every((m) => a.members.some((x) => x.actor === m.actor && x.spotId === m.spotId)),
+        (a) =>
+          !a.finished &&
+          a.activity === activity &&
+          members.every((m) => a.members.some((x) => x.actor === m.actor && x.spotId === m.spotId)),
       );
       if (existing) {
         next.push(existing);
@@ -194,7 +202,11 @@ export class Director {
     const used = new Set(this.activities.filter((a) => !a.finished).map((a) => a.activity));
     const free = OFFICE_SOLO.filter((a) => !used.has(a));
     if (!free.length) return;
-    const pick = this.rng.weighted(free, (a) => 0.3 + this.staleness(a) + (actor.char.affinity[OFFICE_ACTIVITY_AFFINITY[a]] || 0) * 0.3);
+    const pick = this.rng.weighted(
+      free,
+      (a) =>
+        0.3 + this.staleness(a) + (actor.char.affinity[OFFICE_ACTIVITY_AFFINITY[a]] || 0) * 0.3,
+    );
     const group = OFFICE_GROUPS[pick];
     cur.release(actor, {});
     const Cls = ACTIVITY_CLASSES[pick];
@@ -245,12 +257,14 @@ export class Director {
         if (left <= 0) {
           const actor = this.engine.actors.find((a) => a.id === id);
           this.rerollAt.set(id, this.rng.range(TIMING.SOLO_REROLL_MIN, TIMING.SOLO_REROLL_MAX));
-          if (actor && actor.state === "perform" && this.sceneT < this.sceneDur - 6) this.rerollSolo(actor);
+          if (actor && actor.state === "perform" && this.sceneT < this.sceneDur - 6)
+            this.rerollSolo(actor);
         }
       }
       // micro-life for wanderers / waiting actors
       for (const a of this.engine.actors) {
-        if (a.state === "wander" && !a.moving && a.wanderAt && this.engine.time > a.wanderAt) this.wander(a);
+        if (a.state === "wander" && !a.moving && a.wanderAt && this.engine.time > a.wanderAt)
+          this.wander(a);
         if ((a.state === "wander" || a.state === "wait") && !a.moving) this.lookAround(a, dt);
       }
       if (this.ambientCooldown <= 0 && this.rng.chance(dt * 0.08)) {
@@ -267,7 +281,8 @@ export class Director {
   }
 
   lookAround(a, dt) {
-    a.lookTimer = (a.lookTimer ?? this.rng.range(TIMING.LOOKAROUND_MIN, TIMING.LOOKAROUND_MAX)) - dt;
+    a.lookTimer =
+      (a.lookTimer ?? this.rng.range(TIMING.LOOKAROUND_MIN, TIMING.LOOKAROUND_MAX)) - dt;
     if (a.lookTimer <= 0) {
       a.lookTimer = this.rng.range(TIMING.LOOKAROUND_MIN, TIMING.LOOKAROUND_MAX);
       const r = this.rng.next();
@@ -305,7 +320,7 @@ export class Director {
       this.pendingPrompt = prompt;
       return;
     }
-    if (this.huddle && (this.mode === "huddle")) {
+    if (this.huddle && this.mode === "huddle") {
       this.huddle.another(prompt);
       return;
     }
@@ -373,7 +388,7 @@ class Huddle {
     this.engine = director.engine;
     this.prompt = prompt;
     this.rng = new Rng((Date.now() ^ 0x5bd1e995) >>> 0);
-    this.ticketNo = (this.engine.ticketCounter = (this.engine.ticketCounter || 0) + 1);
+    this.ticketNo = this.engine.ticketCounter = (this.engine.ticketCounter || 0) + 1;
     this.t = 0;
     this.phase = "startle";
     this.done = false;
@@ -402,7 +417,10 @@ class Huddle {
   start() {
     const e = this.engine;
     e.dialogue.beginPrompt();
-    this.plan = e.dialogue.buildPlan(this.prompt.text, { dept: this.prompt.dept, ticketNo: this.ticketNo });
+    this.plan = e.dialogue.buildPlan(this.prompt.text, {
+      dept: this.prompt.dept,
+      ticketNo: this.ticketNo,
+    });
     e.props.tickets.addToPile(this.ticketNo);
     e.debugStats.arc = this.plan.title;
     e.bubbles.clearAll();
@@ -443,7 +461,9 @@ class Huddle {
     });
     // nearest slot first, no two actors share one
     const pairs = [];
-    this.actors.forEach((a) => slots.forEach((s, si) => pairs.push({ a, si, d: Math.hypot(a.x - s.x, a.y - s.y) })));
+    this.actors.forEach((a) =>
+      slots.forEach((s, si) => pairs.push({ a, si, d: Math.hypot(a.x - s.x, a.y - s.y) })),
+    );
     pairs.sort((p, q) => p.d - q.d);
     const usedA = new Set();
     const usedS = new Set();
@@ -585,7 +605,11 @@ class Huddle {
     const e = this.engine;
     const plan = this.plan;
     // verdict once the reply is in and the arc reached its punchline
-    if (this.replied && this.beatIndex >= Math.min(TIMING.VERDICT_MIN_BEATS, plan.beats.length) && this.gatheredEnough()) {
+    if (
+      this.replied &&
+      this.beatIndex >= Math.min(TIMING.VERDICT_MIN_BEATS, plan.beats.length) &&
+      this.gatheredEnough()
+    ) {
       this.verdict();
       return;
     }
@@ -611,7 +635,8 @@ class Huddle {
     // short interruptions once things heat up (max 2 bubbles, <= 700 ms)
     const next = plan.beats[this.beatIndex];
     const overlap = beat.heat >= 1 && next && next.speaker !== beat.speaker && this.rng.chance(0.6);
-    this.nextBeatAt = this.t + (len + TIMING.BEAT_GAP_MS - (overlap ? TIMING.OVERLAP_MS : 0)) / 1000;
+    this.nextBeatAt =
+      this.t + (len + TIMING.BEAT_GAP_MS - (overlap ? TIMING.OVERLAP_MS : 0)) / 1000;
   }
 
   gatheredEnough() {
@@ -672,7 +697,8 @@ class Huddle {
     // everyone does their signature emote / cheer
     for (const a of this.actors) {
       if (a.id === beat.speaker) continue;
-      if (this.arrived.has(a)) this.gesture(a, this.rng.chance(0.6) ? "emote" : "cheer", null, TIMING.VERDICT_MS / 1000);
+      if (this.arrived.has(a))
+        this.gesture(a, this.rng.chance(0.6) ? "emote" : "cheer", null, TIMING.VERDICT_MS / 1000);
     }
     this.verdictAt = this.t + (TIMING.VERDICT_MS + TIMING.DISPERSE_DELAY_MS) / 1000;
   }
@@ -752,13 +778,20 @@ class Panic {
       }
       if (pts.length) {
         const p = pts[this.rng.int(0, pts.length - 1)];
-        travel(this.engine, a, p, { mode: "run", onArrive: () => (a.panicAt = this.rng.range(0.05, 0.4)) });
+        travel(this.engine, a, p, {
+          mode: "run",
+          onArrive: () => (a.panicAt = this.rng.range(0.05, 0.4)),
+        });
       } else a.panicAt = 0.5;
     }
     if (this.timer <= 0 && this.engine.bubbles.count() === 0) {
       this.timer = this.rng.range(1.2, 2.2);
       const a = this.rng.pick(this.engine.actors);
-      this.engine.bubbles.say(a, this.engine.dialogue.panicLine(this.rng), { kind: "panic", heat: 3, ms: 1300 });
+      this.engine.bubbles.say(a, this.engine.dialogue.panicLine(this.rng), {
+        kind: "panic",
+        heat: 3,
+        ms: 1300,
+      });
     }
   }
 

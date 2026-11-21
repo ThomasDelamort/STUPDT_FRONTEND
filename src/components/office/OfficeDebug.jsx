@@ -29,15 +29,45 @@ export function OfficeDebugWorld({ snapshot }) {
       viewBox={`0 0 ${OFFICE_WORLD.w} ${OFFICE_WORLD.h}`}
       style={{ zIndex: 3000 }}
     >
-      <polygon points={pts(OFFICE_NAV.walk)} fill="rgba(31,224,63,0.08)" stroke="#1FE03F" strokeWidth="2" />
+      <polygon
+        points={pts(OFFICE_NAV.walk)}
+        fill="rgba(31,224,63,0.08)"
+        stroke="#1FE03F"
+        strokeWidth="2"
+      />
       {OFFICE_NAV.obstacles.map((o) => (
-        <polygon key={o.id} points={pts(o.poly)} fill="rgba(245,40,32,0.18)" stroke="#F52820" strokeWidth="1.5" />
+        <polygon
+          key={o.id}
+          points={pts(o.poly)}
+          fill="rgba(245,40,32,0.18)"
+          stroke="#F52820"
+          strokeWidth="1.5"
+        />
       ))}
       {OFFICE_OCCLUDERS.map((o) => (
         <g key={o.id}>
-          <polygon points={pts(o.poly)} fill="none" stroke="#0EC7F5" strokeWidth="2" strokeDasharray="6 4" />
-          <line x1={o.poly[0][0]} x2={o.poly[0][0] + 60} y1={o.sortY} y2={o.sortY} stroke="#0EC7F5" strokeWidth="1" />
-          <text x={o.poly[0][0] + 4} y={o.poly[0][1] + 14} fill="#0EC7F5" fontSize="13" fontWeight="700">
+          <polygon
+            points={pts(o.poly)}
+            fill="none"
+            stroke="#0EC7F5"
+            strokeWidth="2"
+            strokeDasharray="6 4"
+          />
+          <line
+            x1={o.poly[0][0]}
+            x2={o.poly[0][0] + 60}
+            y1={o.sortY}
+            y2={o.sortY}
+            stroke="#0EC7F5"
+            strokeWidth="1"
+          />
+          <text
+            x={o.poly[0][0] + 4}
+            y={o.poly[0][1] + 14}
+            fill="#0EC7F5"
+            fontSize="13"
+            fontWeight="700"
+          >
             {o.id} ({o.sortY})
           </text>
         </g>
@@ -45,9 +75,18 @@ export function OfficeDebugWorld({ snapshot }) {
       {Object.entries(OFFICE_SPOTS).map(([id, s]) => (
         <g key={id}>
           {s.approach && (
-            <line x1={s.x} y1={s.y} x2={s.approach.x} y2={s.approach.y} stroke="#FFE600" strokeDasharray="3 3" />
+            <line
+              x1={s.x}
+              y1={s.y}
+              x2={s.approach.x}
+              y2={s.approach.y}
+              stroke="#FFE600"
+              strokeDasharray="3 3"
+            />
           )}
-          {s.approach && <rect x={s.approach.x - 4} y={s.approach.y - 4} width="8" height="8" fill="#FFE600" />}
+          {s.approach && (
+            <rect x={s.approach.x - 4} y={s.approach.y - 4} width="8" height="8" fill="#FFE600" />
+          )}
           <circle cx={s.x} cy={s.y} r="6" fill="none" stroke="#FFE600" strokeWidth="2.5" />
           <text x={s.x + 8} y={s.y - 6} fill="#FFE600" fontSize="12" fontWeight="700">
             {id}
@@ -80,7 +119,16 @@ export function OfficeDebugWorld({ snapshot }) {
           )}
           <line x1={a.x - 10} x2={a.x + 10} y1={a.y} y2={a.y} stroke="#F52820" strokeWidth="2.5" />
           <line x1={a.x} x2={a.x} y1={a.y - 10} y2={a.y + 10} stroke="#F52820" strokeWidth="2.5" />
-          <text x={a.x + 10} y={a.y + 22} fill="#fff" fontSize="13" fontWeight="800" stroke="#000" strokeWidth="3" paintOrder="stroke">
+          <text
+            x={a.x + 10}
+            y={a.y + 22}
+            fill="#fff"
+            fontSize="13"
+            fontWeight="800"
+            stroke="#000"
+            strokeWidth="3"
+            paintOrder="stroke"
+          >
             {`${a.id} · ${a.state} · ${a.pose} · ${a.frame}`}
           </text>
         </g>
@@ -94,38 +142,51 @@ export function OfficeDebugPanel({ snapshot }) {
   const [player, setPlayer] = useState(false);
   const s = snapshot || {};
   return (
-    <div
-      className="office-debug-panel absolute top-1 right-1 z-20 w-[230px] max-h-[96%] overflow-auto rounded-lg bg-black/80 text-[10px] leading-tight text-slate-200 p-2 font-mono pointer-events-auto"
-      onPointerDown={(e) => e.stopPropagation()}
-    >
-      <div className="flex justify-between font-bold text-[#FFE600]">
-        <span>OFFICE DEBUG</span>
-        <span>
-          {s.fps ?? "-"} fps · {(s.jsMs ?? 0).toFixed(2)} ms
-        </span>
-      </div>
-      <div>mode: {s.mode} · teleports: {s.teleports ?? 0}</div>
-      <div className="truncate">scene: {s.scene}</div>
-      <div className="truncate">arc: {s.arc || "-"}</div>
-      <div className="mt-1 grid grid-cols-1">
-        {OFFICE_ACTIVITIES.map((a) => (
-          <span key={a} className={s.seen && s.seen[a] ? "text-[#1FE03F]" : "text-slate-500"}>
-            {s.seen && s.seen[a] ? "✓" : "·"} {OFFICE_ACTIVITY_LABELS[a]} {s.seen && s.seen[a] ? `×${s.seen[a]}` : ""}
-          </span>
-        ))}
-      </div>
-      <div className="mt-1 text-slate-400">
-        1-9 scene ({OFFICE_SCENES.length}) · H prompt · R reply · C code red · ` toggle
-      </div>
-      <button
-        type="button"
-        className="mt-1 w-full rounded bg-[#0EC7F5] text-black font-bold py-0.5 cursor-pointer"
-        onClick={() => setPlayer((p) => !p)}
+    <>
+      <div
+        className="office-debug-panel absolute top-1 right-1 z-20 w-[230px] max-h-[96%] overflow-auto rounded-lg bg-black/80 text-[10px] leading-tight text-slate-200 p-2 font-mono pointer-events-auto"
+        onPointerDown={(e) => e.stopPropagation()}
       >
-        {player ? "close" : "open"} in-place player
-      </button>
-      {player && <InPlacePlayer atlases={s.atlases || []} />}
-    </div>
+        <div className="flex justify-between font-bold text-[#FFE600]">
+          <span>OFFICE DEBUG</span>
+          <span>
+            {s.fps ?? "-"} fps · {(s.jsMs ?? 0).toFixed(2)} ms
+          </span>
+        </div>
+        <div>
+          mode: {s.mode} · teleports: {s.teleports ?? 0}
+        </div>
+        <div className="truncate">scene: {s.scene}</div>
+        <div className="truncate">arc: {s.arc || "-"}</div>
+        <div className="mt-1 grid grid-cols-1">
+          {OFFICE_ACTIVITIES.map((a) => (
+            <span key={a} className={s.seen && s.seen[a] ? "text-[#1FE03F]" : "text-slate-500"}>
+              {s.seen && s.seen[a] ? "✓" : "·"} {OFFICE_ACTIVITY_LABELS[a]}{" "}
+              {s.seen && s.seen[a] ? `×${s.seen[a]}` : ""}
+            </span>
+          ))}
+        </div>
+        <div className="mt-1 text-slate-400">
+          1-9 scene ({OFFICE_SCENES.length}) · H prompt · R reply · C code red · ` toggle
+        </div>
+        <button
+          type="button"
+          className="mt-1 w-full rounded bg-[#0EC7F5] text-black font-bold py-0.5 cursor-pointer"
+          onClick={() => setPlayer((p) => !p)}
+        >
+          {player ? "close" : "open"} in-place player
+        </button>
+      </div>
+      {player && (
+        <div
+          className="office-debug-panel absolute top-1 left-1 z-20 w-[250px] max-h-[96%] overflow-auto rounded-lg bg-black/85 text-[10px] leading-tight text-slate-200 p-2 font-mono pointer-events-auto"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <div className="font-bold text-[#FFE600]">IN-PLACE PLAYER</div>
+          <InPlacePlayer atlases={s.atlases || []} />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -160,7 +221,7 @@ function InPlacePlayer({ atlases }) {
 
   const key = clips[`anim:${clip}`] ? `anim:${clip}` : clip;
   const frames = useMemo(() => clips[key] || clips["anim:idle"] || [], [clips, key]);
-  const SCALE = 1.5;
+  const SCALE = 1.25;
 
   useEffect(() => {
     if (!atlas || !boxRef.current) return;
@@ -174,7 +235,8 @@ function InPlacePlayer({ atlases }) {
         el.style.backgroundPosition = `-${f.x * SCALE}px -${f.y * SCALE}px`;
         el.style.transform = mirror ? "scaleX(-1)" : "none";
       }
-      if (labelRef.current) labelRef.current.textContent = `${frames[n]} (${n + 1}/${frames.length})`;
+      if (labelRef.current)
+        labelRef.current.textContent = `${frames[n]} (${n + 1}/${frames.length})`;
       raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
@@ -188,14 +250,22 @@ function InPlacePlayer({ atlases }) {
   return (
     <div className="mt-1 space-y-1">
       <div className="flex gap-1">
-        <select className="flex-1 bg-slate-800 rounded" value={ci} onChange={(e) => setCi(Number(e.target.value))}>
+        <select
+          className="flex-1 bg-slate-800 rounded"
+          value={ci}
+          onChange={(e) => setCi(Number(e.target.value))}
+        >
           {atlases.map((a, i) => (
             <option key={a.name} value={i}>
               {a.name}
             </option>
           ))}
         </select>
-        <select className="flex-1 bg-slate-800 rounded" value={key} onChange={(e) => setClip(e.target.value)}>
+        <select
+          className="flex-1 bg-slate-800 rounded"
+          value={key}
+          onChange={(e) => setClip(e.target.value)}
+        >
           {Object.keys(clips).map((k) => (
             <option key={k} value={k}>
               {k}
@@ -206,7 +276,13 @@ function InPlacePlayer({ atlases }) {
       <div className="flex items-center gap-2">
         <label className="flex items-center gap-1">
           fps
-          <input type="range" min="1" max="20" value={fps} onChange={(e) => setFps(Number(e.target.value))} />
+          <input
+            type="range"
+            min="1"
+            max="20"
+            value={fps}
+            onChange={(e) => setFps(Number(e.target.value))}
+          />
         </label>
         <label className="flex items-center gap-1">
           <input type="checkbox" checked={mirror} onChange={(e) => setMirror(e.target.checked)} />
@@ -249,7 +325,10 @@ function InPlacePlayer({ atlases }) {
           }}
         />
         {/* feet baseline + pivot crosshair */}
-        <div className="absolute left-0 right-0 h-px bg-[#1FE03F]" style={{ top: cell.pivot[1] * SCALE }} />
+        <div
+          className="absolute left-0 right-0 h-px bg-[#1FE03F]"
+          style={{ top: cell.pivot[1] * SCALE }}
+        />
         <div
           className="absolute h-px w-6 bg-[#F52820]"
           style={{ top: cell.pivot[1] * SCALE, left: cell.pivot[0] * SCALE - 12 }}

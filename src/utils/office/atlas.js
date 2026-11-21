@@ -7,7 +7,11 @@
 
 const jsonLoaders = import.meta.glob("../../assets/office/sprites/*.json", { import: "default" });
 const pngUrls = /** @type {Record<string, string>} */ (
-  import.meta.glob("../../assets/office/sprites/*.png", { eager: true, query: "?url", import: "default" })
+  import.meta.glob("../../assets/office/sprites/*.png", {
+    eager: true,
+    query: "?url",
+    import: "default",
+  })
 );
 
 /**

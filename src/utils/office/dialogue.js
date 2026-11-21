@@ -37,7 +37,9 @@ export function makeSnip(text, max = SNIP_LEN) {
 }
 
 export function shortDept(name) {
-  const clean = String(name || "the Feedback Department").replace(/\s+/g, " ").trim();
+  const clean = String(name || "the Feedback Department")
+    .replace(/\s+/g, " ")
+    .trim();
   return clean.length <= DEPT_LEN ? clean : `${clean.slice(0, DEPT_LEN - 1).trimEnd()}…`;
 }
 
@@ -166,11 +168,15 @@ export class Dialogue {
   }
 
   verdictBeat(rng, dept) {
-    return this.lineBeat(this.freshFrom(OFFICE_VERDICT_LINES, rng), rng, 1, { dept: shortDept(dept) });
+    return this.lineBeat(this.freshFrom(OFFICE_VERDICT_LINES, rng), rng, 1, {
+      dept: shortDept(dept),
+    });
   }
 
   anotherBeat(rng, n) {
-    return this.lineBeat(this.freshFrom(OFFICE_ANOTHER_LINES, rng), rng, 3, { n: `#${String(n).padStart(3, "0")}` });
+    return this.lineBeat(this.freshFrom(OFFICE_ANOTHER_LINES, rng), rng, 3, {
+      n: `#${String(n).padStart(3, "0")}`,
+    });
   }
 
   alarmBeat(rng) {

@@ -146,7 +146,8 @@ function close(mask, w, h, r) {
   const W = w + 2 * p;
   const H = h + 2 * p;
   const big = new Uint8Array(W * H);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) big[(y + p) * W + x + p] = mask[y * w + x];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) big[(y + p) * W + x + p] = mask[y * w + x];
   const c = erode(dilate(big, W, H, r), W, H, r);
   const out = new Uint8Array(w * h);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) out[y * w + x] = c[(y + p) * W + x + p];
@@ -241,7 +242,10 @@ function open2x2(m, w, h) {
     for (let x = 0; x < w; x++) {
       const i = y * w + x;
       out[i] =
-        block[i] || (x > 0 && block[i - 1]) || (y > 0 && block[i - w]) || (x > 0 && y > 0 && block[i - w - 1])
+        block[i] ||
+        (x > 0 && block[i - 1]) ||
+        (y > 0 && block[i - w]) ||
+        (x > 0 && y > 0 && block[i - w - 1])
           ? 1
           : 0;
     }
@@ -309,7 +313,8 @@ function extractPanel(data, SW, bg, panelKey, n) {
       // (reddish lifts are the panel frame's glow, never clothing)
       if (L >= WEAK_L && dist > 2 && r - g <= 6) weakRaw[i] = 1;
       if (L < 0 && chroma <= 10 && dist <= 22) shadowLike[i] = 1;
-      cls[i] = dist > KEY_T ? (isYellow(r, g, b) ? 1 : isRed(r, g, b) ? 2 : isGrey(r, g, b) ? 3 : 0) : 0;
+      cls[i] =
+        dist > KEY_T ? (isYellow(r, g, b) ? 1 : isRed(r, g, b) ? 2 : isGrey(r, g, b) ? 3 : 0) : 0;
       if (Math.min(r, g, b) > 215) isWhite[i] = 1;
     }
   }
@@ -509,10 +514,12 @@ function extractPanel(data, SW, bg, panelKey, n) {
           let ym = -1;
           let yc = -1;
           if (below) {
-            for (let y = c.y0 - 1; y >= main.y0 && ym < 0; y--) if (labels[y * w + x] === main.id) ym = y;
+            for (let y = c.y0 - 1; y >= main.y0 && ym < 0; y--)
+              if (labels[y * w + x] === main.id) ym = y;
             for (let y = c.y0; y <= c.y1 && yc < 0; y++) if (labels[y * w + x] === c.id) yc = y;
           } else {
-            for (let y = c.y1 + 1; y <= main.y1 && ym < 0; y++) if (labels[y * w + x] === main.id) ym = y;
+            for (let y = c.y1 + 1; y <= main.y1 && ym < 0; y++)
+              if (labels[y * w + x] === main.id) ym = y;
             for (let y = c.y1; y >= c.y0 && yc < 0; y--) if (labels[y * w + x] === c.id) yc = y;
           }
           if (ym < 0 || yc < 0 || Math.abs(yc - ym) > BRIDGE_MAX + 8) continue;
@@ -736,7 +743,10 @@ function median(arr) {
 // ---------------------------------------------------------------------------
 async function buildSheet(sheet) {
   const file = path.join(SRC, sheet.file);
-  const { data, info } = await sharp(file).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(file)
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   const SW = info.width;
   const bg = [0, 1, 2].map((c) => histMedian(data, 3, c));
 
@@ -900,7 +910,12 @@ async function buildSheet(sheet) {
     .toBuffer();
 
   const atlasPng = await sharp({
-    create: { width: ATLAS_W, height: ATLAS_H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    create: {
+      width: ATLAS_W,
+      height: ATLAS_H,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
   })
     .composite([
       ...prepared.map((p) => ({ input: p.buf, left: p.x, top: p.y })),
@@ -926,7 +941,10 @@ async function buildSheet(sheet) {
     };
     if (p.anchors) {
       anchors[p.key] = Object.fromEntries(
-        Object.entries(p.anchors).map(([k, v]) => [k, v ? [round1(v[0] + p.offX), round1(v[1] + p.offY)] : null]),
+        Object.entries(p.anchors).map(([k, v]) => [
+          k,
+          v ? [round1(v[0] + p.offX), round1(v[1] + p.offY)] : null,
+        ]),
       );
     }
   }
@@ -955,8 +973,16 @@ async function buildSheet(sheet) {
   };
 
   // walk stride estimate: front-foot travel across the in-place cycle
-  const walkStride = estimateStride(prepared.filter((p) => p.panel === "walk"), panels.walk.frames, rowScale.walk);
-  const runStride = estimateStride(prepared.filter((p) => p.panel === "run"), panels.run.frames, rowScale.run);
+  const walkStride = estimateStride(
+    prepared.filter((p) => p.panel === "walk"),
+    panels.walk.frames,
+    rowScale.walk,
+  );
+  const runStride = estimateStride(
+    prepared.filter((p) => p.panel === "run"),
+    panels.run.frames,
+    rowScale.run,
+  );
 
   const json = {
     name: sheet.name,
@@ -1161,7 +1187,10 @@ const PATCH_BAG = { x: 806, y: 152, w: 64, h: 196 };
 const PATCH_DB = { x: 788, y: 378, w: 84, h: 58, cloneDx: 60, cloneDy: 8 }; // clone along the mat edge slope
 
 async function buildPatches(officeSrc) {
-  const { data, info } = await sharp(officeSrc).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(officeSrc)
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   const W = info.width;
   const at = (x, y, c) => data[(y * W + x) * 3 + c];
 
@@ -1170,11 +1199,13 @@ async function buildPatches(officeSrc) {
     const yy = PATCH_BAG.y + y;
     const L = [0, 1, 2].map((c) => (at(PATCH_BAG.x - 3, yy, c) + at(PATCH_BAG.x - 2, yy, c)) / 2);
     const R = [0, 1, 2].map(
-      (c) => (at(PATCH_BAG.x + PATCH_BAG.w + 1, yy, c) + at(PATCH_BAG.x + PATCH_BAG.w + 2, yy, c)) / 2,
+      (c) =>
+        (at(PATCH_BAG.x + PATCH_BAG.w + 1, yy, c) + at(PATCH_BAG.x + PATCH_BAG.w + 2, yy, c)) / 2,
     );
     for (let x = 0; x < PATCH_BAG.w; x++) {
       const t = x / (PATCH_BAG.w - 1);
-      for (let c = 0; c < 3; c++) bag[(y * PATCH_BAG.w + x) * 3 + c] = Math.round(L[c] * (1 - t) + R[c] * t);
+      for (let c = 0; c < 3; c++)
+        bag[(y * PATCH_BAG.w + x) * 3 + c] = Math.round(L[c] * (1 - t) + R[c] * t);
     }
   }
   await sharp(bag, { raw: { width: PATCH_BAG.w, height: PATCH_BAG.h, channels: 3 } })
@@ -1186,7 +1217,11 @@ async function buildPatches(officeSrc) {
   for (let y = 0; y < PATCH_DB.h; y++) {
     for (let x = 0; x < PATCH_DB.w; x++) {
       for (let c = 0; c < 3; c++) {
-        db[(y * PATCH_DB.w + x) * 3 + c] = at(PATCH_DB.x + PATCH_DB.cloneDx + x, PATCH_DB.y + PATCH_DB.cloneDy + y, c);
+        db[(y * PATCH_DB.w + x) * 3 + c] = at(
+          PATCH_DB.x + PATCH_DB.cloneDx + x,
+          PATCH_DB.y + PATCH_DB.cloneDy + y,
+          c,
+        );
       }
     }
   }
@@ -1210,7 +1245,9 @@ async function main() {
 
   // office background -> WebP
   const officeSrc = path.join(SRC, "Neon_Gamer_Lounge_and_City_Nightscape.png");
-  const webp = await sharp(officeSrc).webp({ quality: 82, effort: 6, smartSubsample: true }).toBuffer();
+  const webp = await sharp(officeSrc)
+    .webp({ quality: 82, effort: 6, smartSubsample: true })
+    .toBuffer();
   await fs.writeFile(path.join(OFFICE_OUT, "office.webp"), webp);
   console.log(`office.webp ${(webp.length / 1024).toFixed(0)}KB`);
   await buildPatches(officeSrc);

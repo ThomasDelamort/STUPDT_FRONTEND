@@ -74,9 +74,21 @@ export class OfficeEngine {
     /** @type {((dt: number) => void) | null} */
     this.panicTicker = null;
     this.ticketCounter = 0;
-    this.debugStats = { teleports: 0, fps: 0, seen: {}, scene: "", arc: "", lastStartle: 0, replyAt: 0 };
+    this.debugStats = {
+      teleports: 0,
+      fps: 0,
+      seen: {},
+      scene: "",
+      arc: "",
+      lastStartle: 0,
+      replyAt: 0,
+    };
 
-    this.nav = new NavGrid({ ...OFFICE_NAV, width: OFFICE_WORLD.w, height: OFFICE_NAV.height || OFFICE_WORLD.h });
+    this.nav = new NavGrid({
+      ...OFFICE_NAV,
+      width: OFFICE_WORLD.w,
+      height: OFFICE_NAV.height || OFFICE_WORLD.h,
+    });
 
     // layers (plain absolute divs: no stacking context, so sprite z-indexes
     // interleave with the React-rendered occluders in the world's context)

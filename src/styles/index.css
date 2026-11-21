@@ -65,7 +65,12 @@ body,
 }
 
 .office-glow {
-  background: linear-gradient(160deg, rgba(120, 190, 255, 0.85), rgba(14, 199, 245, 0.35) 55%, rgba(90, 60, 255, 0.5));
+  background: linear-gradient(
+    160deg,
+    rgba(120, 190, 255, 0.85),
+    rgba(14, 199, 245, 0.35) 55%,
+    rgba(90, 60, 255, 0.5)
+  );
   mix-blend-mode: screen;
 }
 
@@ -167,7 +172,11 @@ body,
   background: linear-gradient(#fffdf5, #ece6d6);
   border-top: 3px solid #f52820;
   color: #071638;
-  font: 800 8px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:
+    800 8px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
   text-align: center;
   box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.45);
   will-change: transform;
@@ -193,7 +202,11 @@ body,
   top: 0;
   z-index: 1850;
   color: #bfe9ff;
-  font: 900 20px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:
+    900 20px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
   text-shadow: 0 0 6px rgba(14, 199, 245, 0.8);
   will-change: transform, opacity;
 }
@@ -215,7 +228,10 @@ body,
   border: 1px solid var(--accent);
   background: rgba(8, 8, 10, 0.78);
   color: var(--accent);
-  font: 900 9px/1.4 ui-sans-serif, system-ui, sans-serif;
+  font:
+    900 9px/1.4 ui-sans-serif,
+    system-ui,
+    sans-serif;
   letter-spacing: 0.08em;
   white-space: nowrap;
   will-change: transform;
@@ -231,7 +247,10 @@ body,
   background: #ffe600;
   color: #08080a;
   border: 2px solid #08080a;
-  font: 900 13px/1.1 ui-sans-serif, system-ui, sans-serif;
+  font:
+    900 13px/1.1 ui-sans-serif,
+    system-ui,
+    sans-serif;
   text-align: center;
   opacity: 0;
   box-shadow: 2px 2px 0 #08080a;
@@ -258,7 +277,10 @@ body,
   color: #08080a;
   border: 2px solid #08080a;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
-  font: 700 11px/1.25 ui-sans-serif, system-ui, sans-serif;
+  font:
+    700 11px/1.25 ui-sans-serif,
+    system-ui,
+    sans-serif;
   overflow-wrap: anywhere;
 }
 
@@ -296,13 +318,17 @@ body,
 .office-bubble[data-heat="2"] .office-bubble__inner {
   border-color: #f52820;
   box-shadow: 3px 3px 0 #f52820;
-  animation: office-pop 180ms ease-out, office-shake 260ms ease-in-out 2;
+  animation:
+    office-pop 180ms ease-out,
+    office-shake 260ms ease-in-out 2;
 }
 
 .office-bubble[data-heat="3"] .office-bubble__inner {
   border-color: #f52820;
   box-shadow: 3px 3px 0 #08080a;
-  animation: office-pop 180ms ease-out, office-shake 200ms ease-in-out 4;
+  animation:
+    office-pop 180ms ease-out,
+    office-shake 200ms ease-in-out 4;
 }
 
 /* the burst hangs off the OUTER bubble (a stacking context via will-change)
@@ -314,9 +340,35 @@ body,
   z-index: -1;
   background: #f52820;
   clip-path: polygon(
-    0% 18%, 8% 0%, 16% 14%, 26% 0%, 34% 12%, 44% 0%, 52% 12%, 62% 0%, 70% 14%, 80% 0%, 88% 12%,
-    100% 6%, 94% 30%, 100% 50%, 94% 70%, 100% 94%, 88% 86%, 78% 100%, 70% 86%, 60% 100%, 50% 86%,
-    40% 100%, 32% 86%, 22% 100%, 14% 86%, 0% 96%, 6% 72%, 0% 50%, 6% 30%
+    0% 18%,
+    8% 0%,
+    16% 14%,
+    26% 0%,
+    34% 12%,
+    44% 0%,
+    52% 12%,
+    62% 0%,
+    70% 14%,
+    80% 0%,
+    88% 12%,
+    100% 6%,
+    94% 30%,
+    100% 50%,
+    94% 70%,
+    100% 94%,
+    88% 86%,
+    78% 100%,
+    70% 86%,
+    60% 100%,
+    50% 86%,
+    40% 100%,
+    32% 86%,
+    22% 100%,
+    14% 86%,
+    0% 96%,
+    6% 72%,
+    0% 50%,
+    6% 30%
   );
 }
 
@@ -357,7 +409,11 @@ body,
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, rgba(245, 40, 32, 0) 45%, rgba(245, 40, 32, 0.55) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(245, 40, 32, 0) 45%,
+    rgba(245, 40, 32, 0.55) 100%
+  );
   animation: office-redpulse 0.9s ease-in-out infinite alternate;
 }
 

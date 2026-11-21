@@ -7,7 +7,8 @@
 import { TIMING } from "./timing";
 import { OFFICE_PROPS } from "../../constants/office";
 
-const polyToClip = (poly, ox, oy) => `polygon(${poly.map(([x, y]) => `${x - ox}px ${y - oy}px`).join(",")})`;
+const polyToClip = (poly, ox, oy) =>
+  `polygon(${poly.map(([x, y]) => `${x - ox}px ${y - oy}px`).join(",")})`;
 
 function div(className, parent) {
   const el = document.createElement("div");
@@ -172,7 +173,12 @@ export class Dumbbells {
     setT(this.patch, this.patchCache, "o", on ? "1" : "0");
     for (const it of this.items) {
       setT(it.el, it.cache, "o", on ? "1" : "0");
-      setT(it.el, it.cache, "t", `translate3d(${(it.x - 17).toFixed(1)}px,${(it.y - 7).toFixed(1)}px,0)`);
+      setT(
+        it.el,
+        it.cache,
+        "t",
+        `translate3d(${(it.x - 17).toFixed(1)}px,${(it.y - 7).toFixed(1)}px,0)`,
+      );
       const z = this.holder ? Math.floor(this.holder.y) * 2 + 1 : 2 * 430;
       setT(it.el, it.cache, "z", String(z));
     }
@@ -203,8 +209,8 @@ export class Paddle {
       setT(this.el, this.cache, "o", "0");
       return;
     }
-    const hand =
-      a.anchorWorld("hand") || a.anchorWorld(a.facing > 0 ? "handR" : "handL") || { x: a.x, y: a.y - 90 };
+    const hand = a.anchorWorld("hand") ||
+      a.anchorWorld(a.facing > 0 ? "handR" : "handL") || { x: a.x, y: a.y - 90 };
     setT(this.el, this.cache, "o", String(a.alpha));
     const rot = a.frameKey.startsWith("interact") ? -40 * a.facing : -15 * a.facing;
     setT(
@@ -243,7 +249,15 @@ export class Ball {
    * @param {{ miss?: boolean, onArrive?: () => void }} opts
    */
   launch(from, bounce, to, duration, opts = {}) {
-    this.flight = { from, bounce, to, duration, t: 0, miss: Boolean(opts.miss), onArrive: opts.onArrive };
+    this.flight = {
+      from,
+      bounce,
+      to,
+      duration,
+      t: 0,
+      miss: Boolean(opts.miss),
+      onArrive: opts.onArrive,
+    };
     this.alpha = 1;
   }
 
@@ -278,7 +292,10 @@ export class Ball {
     if (f.t < split) {
       const u = f.t / split;
       x = f.from.x + (f.bounce.x - f.from.x) * u;
-      y = f.from.y + (f.bounce.y - f.from.y) * u - Math.sin(u * Math.PI) * TIMING.PP_ARC * (f.fade ? 0.2 : 1);
+      y =
+        f.from.y +
+        (f.bounce.y - f.from.y) * u -
+        Math.sin(u * Math.PI) * TIMING.PP_ARC * (f.fade ? 0.2 : 1);
       this.shadowY = f.bounce.y;
     } else {
       const u = (f.t - split) / (1 - split);
@@ -302,9 +319,19 @@ export class Ball {
   render() {
     const o = this.alpha.toFixed(2);
     setT(this.el, this.cache, "o", o);
-    setT(this.el, this.cache, "t", `translate3d(${(this.x - 5).toFixed(1)}px,${(this.y - 5).toFixed(1)}px,0)`);
+    setT(
+      this.el,
+      this.cache,
+      "t",
+      `translate3d(${(this.x - 5).toFixed(1)}px,${(this.y - 5).toFixed(1)}px,0)`,
+    );
     setT(this.shadow, this.sCache, "o", this.overTable ? (this.alpha * 0.5).toFixed(2) : "0");
-    setT(this.shadow, this.sCache, "t", `translate3d(${(this.x - 6).toFixed(1)}px,${(this.shadowY - 2).toFixed(1)}px,0)`);
+    setT(
+      this.shadow,
+      this.sCache,
+      "t",
+      `translate3d(${(this.x - 6).toFixed(1)}px,${(this.shadowY - 2).toFixed(1)}px,0)`,
+    );
   }
 }
 
@@ -335,7 +362,16 @@ export class Tickets {
   /** @param {{x:number,y:number}} from @param {{x:number,y:number}} to */
   throw(from, to, n) {
     const el = this.makeTicket(n);
-    this.flying.push({ el, cache: {}, from, to, t: 0, dur: TIMING.TICKET_FLIGHT, actorTo: null, n });
+    this.flying.push({
+      el,
+      cache: {},
+      from,
+      to,
+      t: 0,
+      dur: TIMING.TICKET_FLIGHT,
+      actorTo: null,
+      n,
+    });
   }
 
   /** Add one ticket to the pile (a new prompt landed). */
@@ -379,7 +415,12 @@ export class Tickets {
       const u = Math.min(1, f.t);
       const x = f.from.x + (f.to.x - f.from.x) * u;
       const y = f.from.y + (f.to.y - f.from.y) * u - Math.sin(u * Math.PI) * 70;
-      setT(f.el, f.cache, "t", `translate3d(${(x - 14).toFixed(1)}px,${(y - 9).toFixed(1)}px,0) rotate(${(u * 540).toFixed(0)}deg)`);
+      setT(
+        f.el,
+        f.cache,
+        "t",
+        `translate3d(${(x - 14).toFixed(1)}px,${(y - 9).toFixed(1)}px,0) rotate(${(u * 540).toFixed(0)}deg)`,
+      );
       setT(f.el, f.cache, "z", "1900");
     }
     setT(this.pileEl, this.pileCache, "o", this.pileAlpha.toFixed(2));
@@ -472,7 +513,8 @@ export class MonitorGlow {
   step(dt, reduced) {
     this.t += dt;
     const k = dt * (this.target ? 2 : 0.8);
-    this.level = this.target > this.level ? Math.min(1, this.level + k) : Math.max(0, this.level - k);
+    this.level =
+      this.target > this.level ? Math.min(1, this.level + k) : Math.max(0, this.level - k);
     const flicker = reduced ? 0 : (Math.sin(this.t * 13) + Math.sin(this.t * 31)) * 0.04;
     this.opacity = Math.max(0, this.level * (0.36 + flicker));
   }

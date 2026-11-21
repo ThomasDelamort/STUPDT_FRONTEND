@@ -10,7 +10,16 @@ import { OFFICE_POSES, OFFICE_DEPTH } from "../../constants/office";
 
 /** @typedef {{x: number, y: number}} Pt */
 
-const VIEW_BY_ANGLE = ["right", "frontRight", "front", "frontLeft", "left", "backLeft", "back", "backRight"];
+const VIEW_BY_ANGLE = [
+  "right",
+  "frontRight",
+  "front",
+  "frontLeft",
+  "left",
+  "backLeft",
+  "back",
+  "backRight",
+];
 
 /** Nearest of the 8 turnaround views for a facing vector (screen space). */
 export function viewForVector(dx, dy) {
@@ -213,8 +222,13 @@ export class Actor {
     const ay = other.y - this.y;
     const len = Math.hypot(ax, ay) || 1;
     const nav = this.engine.nav;
-    const cands = [1, -1].map((side) => ({ x: this.x + (-ay / len) * 48 * side, y: this.y + (ax / len) * 24 * side }));
-    const spot = cands.find((p) => nav.walkableAt(p.x, p.y)) || nav.nearestWalkable({ x: this.x - ax * 0.6, y: this.y - ay * 0.6 });
+    const cands = [1, -1].map((side) => ({
+      x: this.x + (-ay / len) * 48 * side,
+      y: this.y + (ax / len) * 24 * side,
+    }));
+    const spot =
+      cands.find((p) => nav.walkableAt(p.x, p.y)) ||
+      nav.nearestWalkable({ x: this.x - ax * 0.6, y: this.y - ay * 0.6 });
     this.sidestepping = true;
     this.moveTo(spot, {
       mode,
@@ -292,7 +306,8 @@ export class Actor {
     const moved = Math.hypot(this.x - this.px, this.y - this.py);
     if (moved > TIMING.RUN_SPEED * 1.8 * dt + 0.5 && !this.engine.allowJump) {
       this.engine.debugStats.teleports++;
-      if (this.engine.debug) console.warn(`[office] ${this.id} jumped ${moved.toFixed(1)}px in one step`);
+      if (this.engine.debug)
+        console.warn(`[office] ${this.id} jumped ${moved.toFixed(1)}px in one step`);
     }
   }
 
@@ -305,14 +320,16 @@ export class Actor {
 
     let speed;
     if (this.direct) speed = this.directSpeed;
-    else speed = this.moveMode === "run" ? TIMING.RUN_SPEED * (this.sprint || 1) : TIMING.WALK_SPEED;
+    else
+      speed = this.moveMode === "run" ? TIMING.RUN_SPEED * (this.sprint || 1) : TIMING.WALK_SPEED;
     speed *= depthScale(this.y);
 
     // arrive easing on the final leg
     if (isLast && !this.direct) {
       const remaining = dist;
       const floor = this.moveMode === "run" ? 0.55 : 0.35;
-      if (remaining < TIMING.ARRIVE_RADIUS) speed *= Math.max(floor, remaining / TIMING.ARRIVE_RADIUS);
+      if (remaining < TIMING.ARRIVE_RADIUS)
+        speed *= Math.max(floor, remaining / TIMING.ARRIVE_RADIUS);
     }
 
     // separation: wait for whoever is in the way; replan around them if it
@@ -320,7 +337,10 @@ export class Actor {
     // (the last few px of the final leg never yield: a neighbour that happens
     // to sit "ahead" of a tiny remaining vector must not freeze the arrival)
     if (!this.direct && !(isLast && dist < 14)) {
-      const other = this.ghostUntil > this.engine.time ? null : this.engine.actorAhead(this, dx / (dist || 1), dy / (dist || 1));
+      const other =
+        this.ghostUntil > this.engine.time
+          ? null
+          : this.engine.actorAhead(this, dx / (dist || 1), dy / (dist || 1));
       if (other) {
         this.blockedFor += dt;
         // last resort against deadlocks: someone parked in a 1-wide corridor
@@ -330,7 +350,11 @@ export class Actor {
           this.blockedFor = 0;
           return;
         }
-        if (this.blockedFor > TIMING.YIELD_MAX * 2.5 && other.index < this.index && !this.sidestepping) {
+        if (
+          this.blockedFor > TIMING.YIELD_MAX * 2.5 &&
+          other.index < this.index &&
+          !this.sidestepping
+        ) {
           this.sidestep(other);
           return;
         }
@@ -410,7 +434,14 @@ export class Actor {
         const toward = this.vy > 0;
         const diag = ax > ay * 0.45;
         let view = toward ? "front" : "back";
-        if (diag) view = toward ? (this.vx > 0 ? "frontRight" : "frontLeft") : this.vx > 0 ? "backRight" : "backLeft";
+        if (diag)
+          view = toward
+            ? this.vx > 0
+              ? "frontRight"
+              : "frontLeft"
+            : this.vx > 0
+              ? "backRight"
+              : "backLeft";
         this.frameKey = atlas.viewFrame(view);
         this.flip = false;
         const bob = Math.abs(Math.sin((this.walkPhase / 8) * Math.PI * 2));
@@ -441,7 +472,9 @@ export class Actor {
       flipAllowed = false;
     } else if (pose.frames) {
       const fps = pose.fps || 0;
-      const n = fps ? Math.floor(this.poseTime * (reduced ? Math.min(fps, TIMING.REDUCED_FPS) : fps)) : 0;
+      const n = fps
+        ? Math.floor(this.poseTime * (reduced ? Math.min(fps, TIMING.REDUCED_FPS) : fps))
+        : 0;
       const key = pose.frames[n % pose.frames.length];
       this.frameKey = atlas.has(key) ? key : "idle_0";
     }
@@ -451,7 +484,8 @@ export class Actor {
     if (pose.rotate) fx.rot = pose.rotate * (this.flip ? -1 : 1);
     if (!reduced) {
       const t = this.engine.time;
-      if (pose.jitter) fx.offX += Math.sin(t * pose.jitter.hz * Math.PI * 2) * pose.jitter.amp * 0.5;
+      if (pose.jitter)
+        fx.offX += Math.sin(t * pose.jitter.hz * Math.PI * 2) * pose.jitter.amp * 0.5;
       if (pose.shake) {
         fx.offX += Math.sin(t * 47 + this.index) * pose.shake;
         fx.lift += Math.abs(Math.sin(t * 11)) * pose.shake;
@@ -461,7 +495,8 @@ export class Actor {
         fx.sy = 1 + b * 0.03;
       }
       if (pose.hop) fx.lift += Math.sin(Math.min(1, this.poseTime / 0.45) * Math.PI) * pose.hop;
-      if (pose.lunge) fx.offX += Math.sin(Math.min(1, this.poseTime / 0.22) * Math.PI) * pose.lunge * this.facing;
+      if (pose.lunge)
+        fx.offX += Math.sin(Math.min(1, this.poseTime / 0.22) * Math.PI) * pose.lunge * this.facing;
     }
     if (this.fxHook) this.fxHook(this, dt * fpsScale);
   }

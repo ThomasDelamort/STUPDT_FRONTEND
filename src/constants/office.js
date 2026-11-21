@@ -169,7 +169,14 @@ export const OFFICE_SPOTS = {
   couch1: { x: 412, y: 738, approach: { x: 556, y: 806 }, view: "front", behind: "couchFront" },
   couch2: { x: 530, y: 722, approach: { x: 590, y: 780 }, view: "front", behind: "couchFront" },
   couch3: { x: 640, y: 712, approach: { x: 620, y: 806 }, view: "front", behind: "couchFront" },
-  chessA: { x: 752, y: 812, approach: { x: 740, y: 928 }, view: "backRight", face: 1, behind: "chessChairA" },
+  chessA: {
+    x: 752,
+    y: 812,
+    approach: { x: 740, y: 928 },
+    view: "backRight",
+    face: 1,
+    behind: "chessChairA",
+  },
   chessB: { x: 995, y: 664, approach: { x: 1078, y: 590 }, view: "frontLeft", face: -1 },
   beanbag: { x: 1508, y: 712, approach: { x: 1345, y: 690 }, face: 1 },
 };
@@ -197,12 +204,42 @@ export const OFFICE_SOLO = ["computer", "pullup", "bag", "weights", "beanbag"];
 export const OFFICE_SCENES = [
   { id: "pp2v2", label: "2v2 Table Tennis Grand Final", weight: 1, groups: ["pingpong2v2"] },
   { id: "couch4", label: "Couch Summit (All Hands)", weight: 1, groups: ["couch"] },
-  { id: "chess_pc_weights", label: "Chess, Code & Curls", weight: 1, groups: ["chess", "computer", "weights"] },
-  { id: "pp1v1_bean_pullup", label: "Rally, Nap, Reps", weight: 1, groups: ["pingpong1v1", "beanbag", "pullup"] },
-  { id: "chess_bag_bean", label: "Grandmasters & Grievances", weight: 1, groups: ["chess", "bag", "beanbag"] },
-  { id: "pp1v1_pc_bag", label: "Rally, Code, Punch", weight: 1, groups: ["pingpong1v1", "computer", "bag"] },
-  { id: "gym", label: "Mandatory Wellness Hour", weight: 0.8, groups: ["pullup", "bag", "weights", "computer"] },
-  { id: "chess_pullup_bean", label: "Quiet Hours (Allegedly)", weight: 0.8, groups: ["chess", "pullup", "beanbag"] },
+  {
+    id: "chess_pc_weights",
+    label: "Chess, Code & Curls",
+    weight: 1,
+    groups: ["chess", "computer", "weights"],
+  },
+  {
+    id: "pp1v1_bean_pullup",
+    label: "Rally, Nap, Reps",
+    weight: 1,
+    groups: ["pingpong1v1", "beanbag", "pullup"],
+  },
+  {
+    id: "chess_bag_bean",
+    label: "Grandmasters & Grievances",
+    weight: 1,
+    groups: ["chess", "bag", "beanbag"],
+  },
+  {
+    id: "pp1v1_pc_bag",
+    label: "Rally, Code, Punch",
+    weight: 1,
+    groups: ["pingpong1v1", "computer", "bag"],
+  },
+  {
+    id: "gym",
+    label: "Mandatory Wellness Hour",
+    weight: 0.8,
+    groups: ["pullup", "bag", "weights", "computer"],
+  },
+  {
+    id: "chess_pullup_bean",
+    label: "Quiet Hours (Allegedly)",
+    weight: 0.8,
+    groups: ["chess", "pullup", "beanbag"],
+  },
   { id: "pp1v1_chess", label: "Tournament Season", weight: 0.9, groups: ["pingpong1v1", "chess"] },
 ];
 
@@ -272,12 +309,60 @@ export const OFFICE_NAV = {
         [124, 802],
       ],
     },
-    { id: "sideTable", poly: [[0, 794], [506, 794], [506, 941], [0, 941]] },
-    { id: "plantTopLeft", poly: [[0, 664], [140, 664], [140, 800], [0, 800]] },
-    { id: "deskChair", poly: [[372, 436], [506, 436], [506, 490], [372, 490]] },
-    { id: "rackPostL", poly: [[586, 392], [614, 392], [614, 450], [586, 450]] },
-    { id: "rackPostR", poly: [[776, 388], [806, 388], [806, 446], [776, 446]] },
-    { id: "dumbbells", poly: [[786, 378], [870, 378], [870, 434], [786, 434]] },
+    {
+      id: "sideTable",
+      poly: [
+        [0, 794],
+        [506, 794],
+        [506, 941],
+        [0, 941],
+      ],
+    },
+    {
+      id: "plantTopLeft",
+      poly: [
+        [0, 664],
+        [140, 664],
+        [140, 800],
+        [0, 800],
+      ],
+    },
+    {
+      id: "deskChair",
+      poly: [
+        [372, 436],
+        [506, 436],
+        [506, 490],
+        [372, 490],
+      ],
+    },
+    {
+      id: "rackPostL",
+      poly: [
+        [586, 392],
+        [614, 392],
+        [614, 450],
+        [586, 450],
+      ],
+    },
+    {
+      id: "rackPostR",
+      poly: [
+        [776, 388],
+        [806, 388],
+        [806, 446],
+        [776, 446],
+      ],
+    },
+    {
+      id: "dumbbells",
+      poly: [
+        [786, 378],
+        [870, 378],
+        [870, 434],
+        [786, 434],
+      ],
+    },
     {
       id: "pingpong",
       poly: [
@@ -308,8 +393,24 @@ export const OFFICE_NAV = {
         [1370, 700],
       ],
     },
-    { id: "plantBottomRight", poly: [[1488, 784], [1672, 760], [1672, 941], [1488, 941]] },
-    { id: "pillar", poly: [[1418, 350], [1528, 350], [1528, 414], [1418, 414]] },
+    {
+      id: "plantBottomRight",
+      poly: [
+        [1488, 784],
+        [1672, 760],
+        [1672, 941],
+        [1488, 941],
+      ],
+    },
+    {
+      id: "pillar",
+      poly: [
+        [1418, 350],
+        [1528, 350],
+        [1528, 414],
+        [1418, 414],
+      ],
+    },
   ],
 };
 
@@ -646,7 +747,11 @@ export const OFFICE_ARCS = [
       {
         who: "janus",
         gesture: "huff",
-        lines: ["I said hmm IRONICALLY.", "Hmm is not a commitment.", "I'm turning my back on this."],
+        lines: [
+          "I said hmm IRONICALLY.",
+          "Hmm is not a commitment.",
+          "I'm turning my back on this.",
+        ],
       },
       {
         who: "neal",
@@ -685,7 +790,11 @@ export const OFFICE_ARCS = [
         gesture: "point",
         at: "neal",
         ticket: "neal",
-        lines: ["Nope. Not my department!", "Hot! Hot! Not my department!", "Return to sender. Not mine!"],
+        lines: [
+          "Nope. Not my department!",
+          "Hot! Hot! Not my department!",
+          "Return to sender. Not mine!",
+        ],
       },
       {
         who: "neal",
@@ -743,7 +852,11 @@ export const OFFICE_ARCS = [
       {
         who: "janus",
         gesture: "talk",
-        lines: ["You always throw rock, Gab.", "Bet. I've been training.", "Fine. Best of one. Go."],
+        lines: [
+          "You always throw rock, Gab.",
+          "Bet. I've been training.",
+          "Fine. Best of one. Go.",
+        ],
       },
       {
         who: "gab",
@@ -753,7 +866,11 @@ export const OFFICE_ARCS = [
       {
         who: "janus",
         gesture: "emote",
-        lines: ["SCISSORS. Peace sign counts.", "Peace. Which is scissors.", "Scissors! I mean, peace!"],
+        lines: [
+          "SCISSORS. Peace sign counts.",
+          "Peace. Which is scissors.",
+          "Scissors! I mean, peace!",
+        ],
       },
       {
         who: "neal",
@@ -767,7 +884,11 @@ export const OFFICE_ARCS = [
       {
         who: "janus",
         gesture: "hop",
-        lines: ["Best of seven! BEST OF SEVEN!", "Rematch! Best of seven!", "Two out of three! Of seven!"],
+        lines: [
+          "Best of seven! BEST OF SEVEN!",
+          "Rematch! Best of seven!",
+          "Two out of three! Of seven!",
+        ],
       },
       { who: "drake", gesture: "cheer", kw: true },
       {
@@ -794,12 +915,20 @@ export const OFFICE_ARCS = [
       {
         who: "drake",
         gesture: "cheer",
-        lines: ["YES! Wait, what are we voting on?", "Hype vote! Yes! Maybe!", "Thumbs up. Thumbs sideways?"],
+        lines: [
+          "YES! Wait, what are we voting on?",
+          "Hype vote! Yes! Maybe!",
+          "Thumbs up. Thumbs sideways?",
+        ],
       },
       {
         who: "janus",
         gesture: "shrug",
-        lines: ["Abstain. Chaotically.", "I vote for a different question.", "I vote we vote again."],
+        lines: [
+          "Abstain. Chaotically.",
+          "I vote for a different question.",
+          "I vote we vote again.",
+        ],
       },
       {
         who: "gab",
@@ -844,7 +973,11 @@ export const OFFICE_ARCS = [
       {
         who: "janus",
         gesture: "recoil",
-        lines: ["Not the laptop.", "He's opening the laptop again.", "Everybody hide. Laptop's out."],
+        lines: [
+          "Not the laptop.",
+          "He's opening the laptop again.",
+          "Everybody hide. Laptop's out.",
+        ],
       },
       {
         who: "neal",
@@ -858,7 +991,11 @@ export const OFFICE_ARCS = [
       {
         who: "drake",
         gesture: "cheer",
-        lines: ["Incredible slides. No notes!", "Standing ovation! Sitting one!", "Synergy! I felt that!"],
+        lines: [
+          "Incredible slides. No notes!",
+          "Standing ovation! Sitting one!",
+          "Synergy! I felt that!",
+        ],
       },
       { who: "neal", gesture: "shout", kw: true },
       {
@@ -947,7 +1084,16 @@ export const OFFICE_ALARM_LINES = [
 
 /** Ambient (idle) micro-bubbles: <= 3 words, rare. */
 export const OFFICE_AMBIENT_LINES = {
-  any: ["Synergy.", "Per my email.", "Circle back.", "Hmm.", "Big if true.", "Mercury, again.", "Low battery.", "Huh."],
+  any: [
+    "Synergy.",
+    "Per my email.",
+    "Circle back.",
+    "Hmm.",
+    "Big if true.",
+    "Mercury, again.",
+    "Low battery.",
+    "Huh.",
+  ],
   computer: ["It compiled!", "Deploying...", "Who wrote this?", "Ctrl+Z. Ctrl+Z."],
   chess: ["Check.", "Your move.", "Hmm. Bold.", "Check. Probably."],
   pingpong: ["Nice shot!", "Out!", "Edge!", "Rematch?"],

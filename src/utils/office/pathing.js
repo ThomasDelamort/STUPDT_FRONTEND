@@ -124,7 +124,9 @@ export class NavGrid {
     this.coarse = new Uint8Array(this.cw * this.ch);
     for (let cy = 0; cy < this.ch; cy++) {
       for (let cx = 0; cx < this.cw; cx++) {
-        this.coarse[cy * this.cw + cx] = this.walkableAt((cx + 0.5) * cell, (cy + 0.5) * cell) ? 1 : 0;
+        this.coarse[cy * this.cw + cx] = this.walkableAt((cx + 0.5) * cell, (cy + 0.5) * cell)
+          ? 1
+          : 0;
       }
     }
   }
@@ -277,7 +279,8 @@ export class NavGrid {
 
 /** Replace the snapped goal with the exact target when it's walkable. */
 function finalize(path, to, snapped) {
-  if (path.length && Math.hypot(to.x - snapped.x, to.y - snapped.y) < 1) path[path.length - 1] = { x: to.x, y: to.y };
+  if (path.length && Math.hypot(to.x - snapped.x, to.y - snapped.y) < 1)
+    path[path.length - 1] = { x: to.x, y: to.y };
   return path;
 }
 

@@ -53,7 +53,8 @@ export class Bubbles {
     b.el.dataset.kind = kind;
     b.el.dataset.heat = String(Math.max(0, Math.min(TIMING.HEAT_STEPS, opts.heat || 0)));
     b.el.classList.toggle("office-bubble--still", reduced);
-    b.name.textContent = kind === "argue" || kind === "verdict" ? `${engine.tx(actor.name.toUpperCase())}: ` : "";
+    b.name.textContent =
+      kind === "argue" || kind === "verdict" ? `${engine.tx(actor.name.toUpperCase())}: ` : "";
     b.name.style.color = actor.char.accent;
     b.on.textContent = shown.slice(0, b.revealed);
     b.off.textContent = shown.slice(b.revealed);

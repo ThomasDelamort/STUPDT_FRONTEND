@@ -20,7 +20,12 @@ let tokenSeq = 0;
  * Travel helper that respects reduced motion (fade-relocate instead of walk)
  * and drops stale callbacks when the actor has been reassigned.
  */
-export function travel(engine, actor, target, { mode = "walk", direct = false, speed = 70, walk = true, onArrive } = {}) {
+export function travel(
+  engine,
+  actor,
+  target,
+  { mode = "walk", direct = false, speed = 70, walk = true, onArrive } = {},
+) {
   const token = ++tokenSeq;
   actor.travelToken = token;
   const done = () => {
@@ -207,7 +212,8 @@ export class Activity {
         if (opts.onFree) opts.onFree();
       };
       // (a delayed stand-up that fires mid-huddle hurries too)
-      const go = () => this.exitMove(m, opts.urgent || this.engine.director.mode !== "idle" ? 340 : 80, free);
+      const go = () =>
+        this.exitMove(m, opts.urgent || this.engine.director.mode !== "idle" ? 340 : 80, free);
       if (opts.delay && !opts.urgent) this.engine.after(opts.delay, go);
       else go();
     } else {
@@ -238,7 +244,12 @@ export class Activity {
 export class ComputerActivity extends Activity {
   enter(m) {
     m.actor.setPose("type", { view: "back" });
-    travel(this.engine, m.actor, m.spot, { direct: true, speed: 46, walk: false, onArrive: () => this.enterDone(m) });
+    travel(this.engine, m.actor, m.spot, {
+      direct: true,
+      speed: 46,
+      walk: false,
+      onArrive: () => this.enterDone(m),
+    });
   }
 
   onPerform(m) {
@@ -263,7 +274,12 @@ export class ComputerActivity extends Activity {
 
   exitMove(m, speed, done) {
     m.actor.setPose("stand", { view: "back" });
-    travel(this.engine, m.actor, m.spot.approach, { direct: true, speed, walk: false, onArrive: done });
+    travel(this.engine, m.actor, m.spot.approach, {
+      direct: true,
+      speed,
+      walk: false,
+      onArrive: done,
+    });
   }
 
   releaseProps() {
@@ -455,7 +471,11 @@ export class WeightsActivity extends Activity {
 // ===========================================================================
 export class BeanbagActivity extends Activity {
   enter(m) {
-    travel(this.engine, m.actor, m.spot, { direct: true, speed: 70, onArrive: () => this.enterDone(m) });
+    travel(this.engine, m.actor, m.spot, {
+      direct: true,
+      speed: 70,
+      onArrive: () => this.enterDone(m),
+    });
   }
 
   onPerform(m) {
@@ -501,7 +521,11 @@ export class BeanbagActivity extends Activity {
 // ===========================================================================
 export class CouchActivity extends Activity {
   enter(m) {
-    travel(this.engine, m.actor, m.spot, { direct: true, speed: 72, onArrive: () => this.enterDone(m) });
+    travel(this.engine, m.actor, m.spot, {
+      direct: true,
+      speed: 72,
+      onArrive: () => this.enterDone(m),
+    });
   }
 
   onPerform(m) {
@@ -574,7 +598,8 @@ export class ChessActivity extends Activity {
       g.moved = false;
       g.dur = this.rng.range(...TIMING.CHESS_TURN);
       const thinker = this.members[(g.turn + 1) % this.members.length];
-      if (thinker && facesCamera(thinker)) thinker.actor.setPose("sitThink", { facing: thinker.spot.face });
+      if (thinker && facesCamera(thinker))
+        thinker.actor.setPose("sitThink", { facing: thinker.spot.face });
       else if (thinker) thinker.actor.lookView = this.rng.chance(0.5) ? "back" : null;
     }
   }
@@ -623,7 +648,15 @@ export class PingPongActivity extends Activity {
   groupUpdate(dt) {
     const { L, R } = this.sides();
     if (!L.length || !R.length) return;
-    const g = (this.game ||= { state: "between", t: 0.6, server: 0, hits: 0, rally: 4, sideHits: [0, 0], lastHitter: null });
+    const g = (this.game ||= {
+      state: "between",
+      t: 0.6,
+      server: 0,
+      hits: 0,
+      rally: 4,
+      sideHits: [0, 0],
+      lastHitter: null,
+    });
     // swing timers
     for (const m of this.members) {
       if (m.data.swing > 0) {
