@@ -11,10 +11,12 @@ import {
   VolumeX,
   Crown,
   Folder,
+  Languages,
   X,
 } from "lucide-react";
 import { RetroDarkLogo } from "../common/RetroDarkLogo";
 import { useStuPDT } from "../../contexts/useStuPDT";
+import { getLanguage } from "../../i18n/languages";
 
 export function Header({ onThemeClick }) {
   const {
@@ -29,8 +31,16 @@ export function Header({ onThemeClick }) {
     soundFX,
     triggerToast,
     setActiveModal,
+    language,
     tx,
   } = useStuPDT();
+
+  // The code badge stays readable in any language, so the button is always findable.
+  const languageCode = getLanguage(language).code;
+  const openLanguageWheel = () => {
+    soundFX.playChime();
+    setActiveModal("language_wheel");
+  };
 
   if (isDarkMode) {
     return (
@@ -61,7 +71,7 @@ export function Header({ onThemeClick }) {
                   soundFX.playChime();
                   setActiveModal("org_about");
                 }}
-                title="About StuPDT & Corporate Org Chart"
+                title={tx("About StuPDT & Corporate Org Chart")}
                 className="w-9 h-8 rounded-full bg-white hover:scale-105 transition-transform flex items-center justify-center shadow-[0_0_12px_rgba(255,255,255,0.25)] relative cursor-pointer"
               >
                 <span className="font-serif font-black text-lg text-blue-700 leading-none">
@@ -76,7 +86,7 @@ export function Header({ onThemeClick }) {
                   soundFX.playRubberStamp();
                   setActiveModal("bureaucracy");
                 }}
-                title="Open Form 001 Bureaucracy Simulator"
+                title={tx("Open Form 001 Bureaucracy Simulator")}
                 className="w-9 h-8 rounded-md bg-[#F0E161] hover:scale-105 transition-transform border-2 border-[#08080A] flex items-center justify-center shadow-[0_0_12px_rgba(240,225,97,0.25)] cursor-pointer relative"
               >
                 <Folder className="w-5 h-5 text-[#08080A] fill-[#F0E161]" />
@@ -90,7 +100,7 @@ export function Header({ onThemeClick }) {
                     "Close Denied: Please submit Departure Form 999-B to the Exit Committee first.",
                   );
                 }}
-                title="Attempt to Close StuPDT"
+                title={tx("Attempt to Close StuPDT")}
                 className="w-8 h-8 bg-[#D4D4D8] hover:bg-white hover:scale-105 transition-transform border-2 border-t-white border-l-white border-r-slate-600 border-b-slate-600 flex items-center justify-center cursor-pointer"
               >
                 <X className="w-5 h-5 text-black stroke-[3]" />
@@ -174,8 +184,20 @@ export function Header({ onThemeClick }) {
             </button>
 
             <button
+              onClick={openLanguageWheel}
+              title={tx("Spin the Wheel of Languages (you do not get to choose)")}
+              className="px-3 py-1.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#FFE600]/60 text-[#FFE600] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <Languages className="w-3.5 h-3.5" />
+              <span>{tx("Spin Language")}</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#FFE600] text-[#08080A] text-[10px] font-black leading-none">
+                {languageCode}
+              </span>
+            </button>
+
+            <button
               onClick={toggleMute}
-              title={isMuted ? "Unmute Sound" : "Mute Sound"}
+              title={isMuted ? tx("Unmute Sound") : tx("Mute Sound")}
               className="p-1.5 rounded-xl bg-[#181820] hover:bg-[#23232F] border border-[#2A2A35] text-slate-300 cursor-pointer"
             >
               {isMuted ? (
@@ -260,7 +282,19 @@ export function Header({ onThemeClick }) {
               {tx("Report")}
             </button>
             <button
+              onClick={openLanguageWheel}
+              title={tx("Spin the Wheel of Languages (you do not get to choose)")}
+              className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-white text-[#071638] border-2 border-[#071638] flex items-center gap-1 cursor-pointer"
+            >
+              <Languages className="w-3.5 h-3.5" />
+              <span>{tx("Spin Language")}</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#FFE600] text-[#071638] text-[10px] font-black leading-none border border-[#071638]">
+                {languageCode}
+              </span>
+            </button>
+            <button
               onClick={toggleMute}
+              title={isMuted ? tx("Unmute Sound") : tx("Mute Sound")}
               className="p-1.5 rounded-lg bg-white text-[#071638] border-2 border-[#071638] cursor-pointer"
             >
               {isMuted ? (

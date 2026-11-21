@@ -53,7 +53,8 @@ export function useVisionScan(onPostScanToChat) {
       if (file.size > MAX_SIZE_MB * 1024 * 1024) {
         soundFX.playErrorBuzz();
         triggerToast(
-          `File too large! Max allowed is ${MAX_SIZE_MB}MB to prevent overwhelming our bureaucracy.`,
+          "File too large! Max allowed is {maxSize}MB to prevent overwhelming our bureaucracy.",
+          { maxSize: MAX_SIZE_MB },
         );
         return;
       }

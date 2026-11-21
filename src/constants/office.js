@@ -155,7 +155,7 @@ export const OFFICE_ACTIVITY_AFFINITY = {
  * into a seat from the front doesn't pop across the seat's depth line.
  */
 export const OFFICE_SPOTS = {
-  computer: { x: 437, y: 468, approach: { x: 437, y: 522 }, view: "back", behind: "deskChair" },
+  computer: { x: 424, y: 428, approach: { x: 437, y: 522 }, view: "backLeft", behind: "deskChair", labelY: 492 },
   pullup: { x: 708, y: 392, approach: { x: 708, y: 470 }, barY: 186 },
   bag: { x: 774, y: 458, face: 1 },
   weights: { x: 912, y: 450, face: -1 },
@@ -471,15 +471,26 @@ export const OFFICE_OCCLUDERS = [
   {
     id: "deskChair",
     sortY: 484,
+    // Only the upholstery hides the sitter. The keyboard and the gap to
+    // the left of the backrest are behind their shoulders.
     poly: [
-      [374, 318],
-      [500, 316],
-      [502, 420],
-      [474, 436],
-      [474, 480],
-      [392, 480],
-      [392, 436],
-      [372, 420],
+      [435, 327], [439, 321], [486, 314], [496, 315], [500, 322],
+      [494, 356], [485, 419], [481, 426], [437, 437], [424, 440],
+      [398, 434], [394, 430], [374, 422], [373, 411], [396, 405],
+      [397, 395], [380, 392], [380, 386], [389, 383], [420, 390],
+      [425, 390],
+    ],
+  },
+  {
+    id: "deskChairBase",
+    sortY: 484,
+    poly: [
+      [427, 435], [441, 433], [440, 453], [460, 453], [461, 460],
+      [446, 463], [481, 469], [485, 476], [482, 485], [472, 485],
+      [470, 477], [440, 471], [445, 485], [444, 494], [435, 497],
+      [431, 491], [430, 473], [398, 481], [395, 488], [386, 489],
+      [383, 484], [387, 474], [416, 466], [393, 470], [389, 467],
+      [391, 461], [427, 454],
     ],
   },
   {
@@ -612,8 +623,8 @@ export const OFFICE_POSES = {
   sitMove: { frames: ["interact_0"], sink: 0.3 },
   sitTalk: { frames: ["talk_0"], sink: 0.28 },
   boxGuard: { view: "right" },
-  type: { view: "back", jitter: { amp: 1, hz: 8 }, sink: 0.04 },
-  typeThink: { view: "backLeft", sink: 0.04 },
+  type: { view: "backLeft", jitter: { amp: 1, hz: 8 }, cropBottom: 0.12 },
+  typeThink: { view: "left", cropBottom: 0.12 },
   paddleReady: { frames: ["idle_0", "idle_1"], fps: 3 },
   swing: { frames: ["interact_0"], lunge: 8 },
   punch: { frames: ["interact_0"], lunge: 10 },

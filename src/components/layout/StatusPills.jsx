@@ -64,7 +64,7 @@ export function StatusPills({ activeDepartmentObj }) {
               chaosMeter >= 80 ? "text-[#F52820]" : isDarkMode ? "text-[#1FE03F]" : "text-[#FFE600]"
             }
           >
-            {tx(`${String(chaosMeter)}%`)}
+            {tx("{value}%", { value: chaosMeter })}
           </span>
         </div>
         <div
@@ -105,7 +105,10 @@ export function StatusPills({ activeDepartmentObj }) {
             {tx("Problems Solved")}
           </span>
           <p className="text-xs sm:text-sm font-black mt-0.5">
-            {tx(`${String(specialistsConsulted)} Depts • ${String(minutesWasted)}m Wasted`)}
+            {tx("{depts} Depts • {minutes}m Wasted", {
+              depts: specialistsConsulted,
+              minutes: minutesWasted,
+            })}
           </p>
         </div>
         <span
@@ -146,7 +149,7 @@ export function StatusPills({ activeDepartmentObj }) {
           className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition ${
             isDarkMode ? "hover:bg-white/10 text-slate-300" : "hover:bg-black/5 text-[#071638]"
           }`}
-          title="Retry backend health check"
+          title={tx("Retry backend health check")}
         >
           {tx("Ping API")}
         </button>

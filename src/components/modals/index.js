@@ -8,3 +8,4 @@ export { EmotionalSupportModal } from "./EmotionalSupportModal";
 export { InfiniteLoadingModal } from "./InfiniteLoadingModal";
 export { ReportModal } from "./ReportModal";
 export { GrandFinaleModal } from "./GrandFinaleModal";
+export { LanguageWheelModal } from "./LanguageWheelModal";

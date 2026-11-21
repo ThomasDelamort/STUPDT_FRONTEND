@@ -184,7 +184,7 @@ export function OfficeScene({ messages, isTransferring, transferTarget, activeDe
             {tx(OFFICE_COPY.title)}
           </h2>
           <span className={`hidden sm:inline text-[11px] font-semibold truncate ${isDarkMode ? "text-slate-400" : "text-white/80"}`}>
-            {tx(`— ${OFFICE_COPY.subtitle}`)}
+            {tx("— {subtitle}", { subtitle: OFFICE_COPY.subtitle })}
           </span>
         </div>
         <div className="flex items-center gap-1.5">

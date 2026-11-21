@@ -499,6 +499,13 @@ export class Actor {
     const Y = y + fx.offY - fx.lift + sinkPx;
     const sx = sc * fx.sx * (this.flip ? -1 : 1);
     const sy = sc * fx.sy;
+    // The desk uses the upper body of a standing view above the chair seat.
+    const crop = OFFICE_POSES[this.poseName]?.cropBottom || 0;
+    const clip = crop ? `inset(0 0 ${this.cellH - this.pivotY + drawnH * crop}px)` : "";
+    if (clip !== this._clip) {
+      this.el.style.clipPath = clip;
+      this._clip = clip;
+    }
 
     const t = `translate3d(${(X - this.pivotX).toFixed(2)}px,${(Y - this.pivotY).toFixed(2)}px,0) rotate(${fx.rot.toFixed(2)}deg) scale(${sx.toFixed(4)},${sy.toFixed(4)})`;
     if (t !== this._t) {
@@ -532,7 +539,8 @@ export class Actor {
     }
 
     // name tag: just under the feet, in screen px
-    const tagT = `translate3d(${(x * s).toFixed(1)}px,${((y + 6) * s).toFixed(1)}px,0) translateX(-50%)`;
+    const labelY = this.labelFloorY ? Math.max(y, this.labelFloorY) : y;
+    const tagT = `translate3d(${(x * s).toFixed(1)}px,${((labelY + 6) * s).toFixed(1)}px,0) translateX(-50%)`;
     if (tagT !== this._tagT) {
       this.tagEl.style.transform = tagT;
       this._tagT = tagT;

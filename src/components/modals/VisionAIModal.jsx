@@ -128,7 +128,7 @@ export function VisionAIModal({
               {visionPreviewUrl ? (
                 <img
                   src={visionPreviewUrl}
-                  alt="Uploaded scan target"
+                  alt={tx("Uploaded scan target")}
                   className="max-h-full max-w-full object-contain"
                 />
               ) : (
@@ -152,12 +152,12 @@ export function VisionAIModal({
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-wider text-[#0EC7F5] block">
-                      {tx(`Detected ${visionResult.category}`)}
+                      {tx("Detected {category}", { category: visionResult.category })}
                     </span>
                     <h4 className="text-xl font-black">{tx(visionResult.detectedItem)}</h4>
                   </div>
                   <span className="px-3 py-1 rounded-xl bg-[#1FE03F] text-[#08080A] font-black text-xs">
-                    {tx(`Confidence: ${visionResult.confidence}`)}
+                    {tx("Confidence: {value}", { value: visionResult.confidence })}
                   </span>
                 </div>
 

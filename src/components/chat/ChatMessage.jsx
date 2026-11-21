@@ -44,7 +44,7 @@ export function ChatMessage({ message }) {
             }`}
           >
             <PhoneCall className="w-3 h-3" />
-            <span>{tx(`Transferred: ${message.transferredFrom} → ${message.deptName}`)}</span>
+            <span>{tx("Transferred: {from} → {to}", { from: message.transferredFrom, to: message.deptName })}</span>
           </div>
         </div>
       )}
@@ -92,7 +92,7 @@ export function ChatMessage({ message }) {
                     : "bg-[#FFE600] text-[#071638] border border-[#071638]"
                 }`}
               >
-                {tx(`Confidence: ${message.confidence}`)}
+                {tx("Confidence: {value}", { value: message.confidence })}
               </span>
               <span
                 className={`px-2 py-0.5 rounded-md ${
@@ -101,7 +101,7 @@ export function ChatMessage({ message }) {
                     : "bg-[#F4F9FF] text-[#071638] border border-[#3888F2]"
                 }`}
               >
-                {tx(`Blame: ${message.blame}`)}
+                {tx("Blame: {value}", { value: message.blame })}
               </span>
             </div>
             <span className="text-[#F52820] font-black">{tx("0% Solved")}</span>

@@ -31,6 +31,7 @@ import {
   InfiniteLoadingModal,
   ReportModal,
   GrandFinaleModal,
+  LanguageWheelModal,
 } from "./components/modals";
 
 function StuPDTApp() {
@@ -305,6 +306,7 @@ function StuPDTApp() {
       <InfiniteLoadingModal />
       <ReportModal />
       <GrandFinaleModal onChoice={handleGrandFinaleChoice} />
+      <LanguageWheelModal />
     </div>
   );
 }

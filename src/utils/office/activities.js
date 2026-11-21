@@ -247,7 +247,8 @@ export class Activity {
 // ===========================================================================
 export class ComputerActivity extends Activity {
   enter(m) {
-    m.actor.setPose("type", { view: "back" });
+    m.actor.labelFloorY = m.spot.labelY;
+    m.actor.setPose("type");
     travel(this.engine, m.actor, m.spot, {
       direct: true,
       speed: 46,
@@ -257,7 +258,8 @@ export class ComputerActivity extends Activity {
   }
 
   onPerform(m) {
-    m.actor.setPose("type", { view: "back" });
+    m.actor.labelFloorY = m.spot.labelY;
+    m.actor.setPose("type");
     m.data.nextTurn = this.rng.range(...TIMING.TYPE_HEADTURN);
     m.data.turning = 0;
     this.engine.props.glow.setOn(true);
@@ -267,7 +269,7 @@ export class ComputerActivity extends Activity {
     const d = m.data;
     if (d.turning > 0) {
       d.turning -= dt;
-      if (d.turning <= 0) m.actor.setPose("type", { view: "back" });
+      if (d.turning <= 0) m.actor.setPose("type");
     } else if (m.t > d.nextTurn) {
       m.actor.setPose("typeThink");
       d.turning = 1.4;
@@ -277,12 +279,15 @@ export class ComputerActivity extends Activity {
   }
 
   exitMove(m, speed, done) {
-    m.actor.setPose("stand", { view: "back" });
+    m.actor.setPose("stand", { view: m.spot.view });
     travel(this.engine, m.actor, m.spot.approach, {
       direct: true,
       speed,
       walk: false,
-      onArrive: done,
+      onArrive: () => {
+        m.actor.labelFloorY = null;
+        done();
+      },
     });
   }
 
