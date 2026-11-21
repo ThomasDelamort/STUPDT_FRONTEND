@@ -193,6 +193,22 @@ The project uses **pnpm** and **Vite+** (`vp`).
 | `pnpm lint`    | Lint with type-aware rules (`react/rules-of-hooks` is an error)                               |
 | `pnpm sprites` | Rebuild THE OFFICE sprite atlases from `art/source` (dev-only `sharp`; outputs are committed) |
 
+### Deploying to Vercel (GitHub Actions)
+
+[`.github/workflows/ci-deploy.yml`](.github/workflows/ci-deploy.yml) lints and builds on every push and PR, then deploys with the Vercel CLI:
+
+- **Pull request:** a preview deploy, with the URL posted as a PR comment (skipped for fork PRs, which have no secrets).
+- **Push to `main`:** a production deploy.
+
+One-time setup:
+
+1. Create the project in Vercel and run `vercel link` locally. It writes `.vercel/project.json` with your `orgId` and `projectId`.
+2. Add three repository secrets in GitHub (Settings → Secrets and variables → Actions): `VERCEL_TOKEN` (from vercel.com/account/tokens), `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`.
+3. In the Vercel project, disconnect the Git repository so Vercel's own integration doesn't deploy a second time.
+4. Set `GEMINI_API_KEY` (optional) in Vercel's Environment Variables. The workflow pulls it at build time.
+
+Build settings live in [`vercel.json`](vercel.json). Note that the Vercel project has no `/api` functions of its own in this repo, so live AI only works if you add them or point `VITE_API_BASE_URL` at a backend.
+
 ### Docker
 
 A multi-stage `Dockerfile` builds the app with pnpm and serves `dist/` from nginx on port 80. [`nginx.conf`](nginx.conf) falls back to `index.html` for SPA routes and proxies `/api/` to `http://backend:8000`, so run it on a network with a service named `backend` (or edit the config).
