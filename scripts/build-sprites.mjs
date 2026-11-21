@@ -864,34 +864,29 @@ async function buildSheet(sheet) {
     prepared.push({ key: e.key, panel: e.panel, w: nw, h: nh, buf, pivot, anchors, scale });
   }
 
-  // shelf packing
-  const ATLAS_W = 1024;
-  const order = [...prepared].sort((a, b) => b.h - a.h);
-  let cx = PAD;
-  let cy = PAD;
-  let shelfH = 0;
-  for (const p of order) {
-    if (cx + p.w + PAD > ATLAS_W) {
-      cx = PAD;
-      cy += shelfH + PAD;
-      shelfH = 0;
-    }
-    p.x = cx;
-    p.y = cy;
-    cx += p.w + PAD;
-    shelfH = Math.max(shelfH, p.h);
-  }
-  // avatar slot
-  const avatar = { w: AVATAR_SIZE, h: AVATAR_SIZE };
-  if (cx + avatar.w + PAD > ATLAS_W) {
-    cx = PAD;
-    cy += shelfH + PAD;
-    shelfH = 0;
-  }
-  avatar.x = cx;
-  avatar.y = cy;
-  shelfH = Math.max(shelfH, avatar.h);
-  const ATLAS_H = cy + shelfH + PAD;
+  // Uniform cells: every frame sits in an identical cell with its pivot at
+  // the same cell-local point, so at runtime a frame change is a pure
+  // background-position write (no width/height/layout churn).
+  const left = Math.ceil(Math.max(...prepared.map((p) => p.pivot[0])));
+  const right = Math.ceil(Math.max(...prepared.map((p) => p.w - p.pivot[0])));
+  const up = Math.ceil(Math.max(...prepared.map((p) => p.pivot[1])));
+  const half = Math.max(left, right);
+  const CELL_W = 2 * half + 2 * PAD;
+  const CELL_H = up + 2 * PAD;
+  const CELL_PIVOT = [half + PAD, up + PAD];
+  const COLS = Math.max(1, Math.floor(1024 / CELL_W));
+  prepared.forEach((p, i) => {
+    p.cellX = (i % COLS) * CELL_W;
+    p.cellY = Math.floor(i / COLS) * CELL_H;
+    p.offX = Math.round(CELL_PIVOT[0] - p.pivot[0]);
+    p.offY = Math.round(CELL_PIVOT[1] - p.pivot[1]);
+    p.x = p.cellX + p.offX;
+    p.y = p.cellY + p.offY;
+  });
+  const rows = Math.ceil(prepared.length / COLS);
+  const ATLAS_W = COLS * CELL_W;
+  const avatar = { w: AVATAR_SIZE, h: AVATAR_SIZE, x: 0, y: rows * CELL_H };
+  const ATLAS_H = avatar.y + AVATAR_SIZE;
 
   const avatarBuf = await sharp(file)
     .extract({
@@ -916,11 +911,24 @@ async function buildSheet(sheet) {
   await fs.writeFile(path.join(OUT, `${sheet.name}.png`), atlasPng);
 
   // ---- JSON ---------------------------------------------------------------
+  // frames are uniform cells; `trim` is the drawn sprite's rect inside the
+  // cell (used for bubble/head placement); anchors are cell-local.
   const frames = {};
   const anchors = {};
   for (const p of prepared) {
-    frames[p.key] = { x: p.x, y: p.y, w: p.w, h: p.h, pivot: p.pivot };
-    if (p.anchors) anchors[p.key] = p.anchors;
+    frames[p.key] = {
+      x: p.cellX,
+      y: p.cellY,
+      w: CELL_W,
+      h: CELL_H,
+      pivot: CELL_PIVOT,
+      trim: [p.offX, p.offY, p.w, p.h],
+    };
+    if (p.anchors) {
+      anchors[p.key] = Object.fromEntries(
+        Object.entries(p.anchors).map(([k, v]) => [k, v ? [round1(v[0] + p.offX), round1(v[1] + p.offY)] : null]),
+      );
+    }
   }
   const seq = (prefix, count) => Array.from({ length: count }, (_, i) => `${prefix}_${i}`);
   const animations = {
@@ -954,6 +962,7 @@ async function buildSheet(sheet) {
     name: sheet.name,
     image: `${sheet.name}.png`,
     size: [ATLAS_W, ATLAS_H],
+    cell: { w: CELL_W, h: CELL_H, pivot: CELL_PIVOT },
     frames,
     animations,
     views,
@@ -1139,6 +1148,53 @@ async function buildMaskDebug(r) {
     .toFile(path.join(QA, `${r.sheet.name}-decorations.png`));
 }
 
+/**
+ * Runtime "cover" patches for props that are baked into office.png and get
+ * animated (the office image itself is never edited):
+ *  - patch-bag.png: what's behind the punching bag, approximated by a
+ *    row-wise blend of the columns left/right of it (only slivers show while
+ *    the bag swings)
+ *  - patch-dumbbells.png: mat texture cloned from just right of the dumbbells
+ * Rects must match OFFICE_PATCHES in src/constants/office.js.
+ */
+const PATCH_BAG = { x: 806, y: 152, w: 64, h: 196 };
+const PATCH_DB = { x: 788, y: 378, w: 84, h: 58, cloneDx: 60, cloneDy: 8 }; // clone along the mat edge slope
+
+async function buildPatches(officeSrc) {
+  const { data, info } = await sharp(officeSrc).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width;
+  const at = (x, y, c) => data[(y * W + x) * 3 + c];
+
+  const bag = Buffer.alloc(PATCH_BAG.w * PATCH_BAG.h * 3);
+  for (let y = 0; y < PATCH_BAG.h; y++) {
+    const yy = PATCH_BAG.y + y;
+    const L = [0, 1, 2].map((c) => (at(PATCH_BAG.x - 3, yy, c) + at(PATCH_BAG.x - 2, yy, c)) / 2);
+    const R = [0, 1, 2].map(
+      (c) => (at(PATCH_BAG.x + PATCH_BAG.w + 1, yy, c) + at(PATCH_BAG.x + PATCH_BAG.w + 2, yy, c)) / 2,
+    );
+    for (let x = 0; x < PATCH_BAG.w; x++) {
+      const t = x / (PATCH_BAG.w - 1);
+      for (let c = 0; c < 3; c++) bag[(y * PATCH_BAG.w + x) * 3 + c] = Math.round(L[c] * (1 - t) + R[c] * t);
+    }
+  }
+  await sharp(bag, { raw: { width: PATCH_BAG.w, height: PATCH_BAG.h, channels: 3 } })
+    .blur(1.2)
+    .png({ compressionLevel: 9 })
+    .toFile(path.join(OFFICE_OUT, "patch-bag.png"));
+
+  const db = Buffer.alloc(PATCH_DB.w * PATCH_DB.h * 3);
+  for (let y = 0; y < PATCH_DB.h; y++) {
+    for (let x = 0; x < PATCH_DB.w; x++) {
+      for (let c = 0; c < 3; c++) {
+        db[(y * PATCH_DB.w + x) * 3 + c] = at(PATCH_DB.x + PATCH_DB.cloneDx + x, PATCH_DB.y + PATCH_DB.cloneDy + y, c);
+      }
+    }
+  }
+  await sharp(db, { raw: { width: PATCH_DB.w, height: PATCH_DB.h, channels: 3 } })
+    .png({ compressionLevel: 9 })
+    .toFile(path.join(OFFICE_OUT, "patch-dumbbells.png"));
+}
+
 // ---------------------------------------------------------------------------
 async function main() {
   await fs.mkdir(OUT, { recursive: true });
@@ -1157,6 +1213,7 @@ async function main() {
   const webp = await sharp(officeSrc).webp({ quality: 82, effort: 6, smartSubsample: true }).toBuffer();
   await fs.writeFile(path.join(OFFICE_OUT, "office.webp"), webp);
   console.log(`office.webp ${(webp.length / 1024).toFixed(0)}KB`);
+  await buildPatches(officeSrc);
 
   let total = 0;
   for (const r of results) total += r.atlasPng.length;

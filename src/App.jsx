@@ -17,6 +17,7 @@ import { ToastNotification } from "./components/layout/ToastNotification";
 // Chat & Accessibility Components
 import { ChatWindow, QuickStarters } from "./components/chat";
 import { SignLanguageWidget } from "./components/accessibility/SignLanguageWidget";
+import { OfficeScene } from "./components/office";
 
 // Modal Components
 import {
@@ -253,6 +254,12 @@ function StuPDTApp() {
           chatEndRef={chatEndRef}
         />
         <QuickStarters onSendMessage={handleSendMessage} />
+        <OfficeScene
+          messages={messages}
+          isTransferring={isTransferring}
+          transferTarget={transferTarget}
+          activeDepartmentObj={activeDepartmentObj}
+        />
       </main>
 
       {/* Floating Picture-in-Picture Sign Language Widget */}
