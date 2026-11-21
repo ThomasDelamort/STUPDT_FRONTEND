@@ -1,12 +1,11 @@
 <div align="center">
 
 ```
- ███████╗████████╗██╗   ██╗██████╗ ██████╗ ████████╗
- ██╔════╝╚══██╔══╝██║   ██║██╔══██╗██╔══██╗╚══██╔══╝
- ███████╗   ██║   ██║   ██║██████╔╝██║  ██║   ██║
- ╚════██║   ██║   ██║   ██║██╔═══╝ ██║  ██║   ██║
- ███████║   ██║   ╚██████╔╝██║     ██████╔╝   ██║
- ╚══════╝   ╚═╝    ╚═════╝ ╚═╝     ╚═════╝    ╚═╝
+ ____  _____ _   _ ____  ____  _____
+/ ___||_   _| | | |  _ \|  _ \|_   _|
+\___ \  | | | | | | |_) | | | | | |
+ ___) | | | | |_| |  __/| |_| | | |
+|____/  |_|  \___/|_|   |____/  |_|
 ```
 
 ### **Stupid. Fast. Wrong.**
@@ -101,6 +100,14 @@ The app starts in a dark crosshair-poster theme. Switching to **Light Mode** req
 1. Pass a CAPTCHA (select only the 3 real Traffic Lights, not "Just a Rock" or "Our CEO AI")
 2. Solve a **Mandatory Legal Math** problem (a hint is available from a Math Specialist who is "risking termination")
 
+### 🎡 Wheel of Languages
+
+You don't pick a language. Click the language button in the header and a wheel spins; whatever wedge lands under the pointer is applied to the **entire UI**. The winner is chosen before the animation starts, so what you see is always what you get. Twelve wedges mix real languages with joke dialects:
+
+English, Español, Pirate, Français, Deutsch, Skibidi, 日本語, Português, tlhIngan (Klingon), Filipino, हिन्दी and Igpay Atinlay (Pig Latin).
+
+Pirate, Skibidi and Klingon use partial dictionaries. Pig Latin is algorithmic, so it works on any runtime string. Respects `prefers-reduced-motion` (the spin shortens to a blink).
+
 ### ♿ Accessibility, interpreted loosely
 
 - **Braille mode** converts all visible UI text to Unicode Braille
@@ -169,7 +176,7 @@ StuPDT degrades gracefully, so the demo can't be broken by a missing backend:
                                                 └──────────────┘
 ```
 
-> **Backend note:** the `/api/chat`, `/api/bureaucracy/submit`, `/api/metrics`, `/api/health` and `/api/gemini` endpoints are **not included in this repo**. The frontend treats them as optional, and the status pills show whether a backend is reachable. If you run a FastAPI backend on port `8000`, the Vite dev server proxies `/api` to it automatically.
+> **Backend note:** the `/api/chat`, `/api/bureaucracy/submit`, `/api/metrics`, `/api/health` and `/api/gemini` endpoints are **not included in this repo**. The frontend treats them as optional, and the status pills show whether a backend is reachable. If you run a FastAPI backend on port `8000` (e.g. `pnpm backend`, which expects a sibling `../STUPDT_BACKEND` folder with its own `.venv`), the Vite dev server proxies `/api` to it automatically.
 
 ---
 
@@ -180,10 +187,22 @@ The project uses **pnpm** and **Vite+** (`vp`).
 | Command        | What it does                                                                                  |
 | -------------- | --------------------------------------------------------------------------------------------- |
 | `pnpm dev`     | Start the dev server on port `5173`                                                           |
+| `pnpm backend` | Start the optional FastAPI backend from `../STUPDT_BACKEND` on port `8000` (alias: `pnpm dev:backend`) |
 | `pnpm build`   | Type-check with `tsc -b`, then production build                                               |
 | `pnpm preview` | Serve the production build locally                                                            |
 | `pnpm lint`    | Lint with type-aware rules (`react/rules-of-hooks` is an error)                               |
 | `pnpm sprites` | Rebuild THE OFFICE sprite atlases from `art/source` (dev-only `sharp`; outputs are committed) |
+
+### Docker
+
+A multi-stage `Dockerfile` builds the app with pnpm and serves `dist/` from nginx on port 80. [`nginx.conf`](nginx.conf) falls back to `index.html` for SPA routes and proxies `/api/` to `http://backend:8000`, so run it on a network with a service named `backend` (or edit the config).
+
+```bash
+docker build -t stupdt-frontend .
+docker run -p 8080:80 stupdt-frontend
+```
+
+Without a `backend` host the proxy returns errors for `/api`, and the app falls back to its offline replies.
 
 ---
 
@@ -192,6 +211,8 @@ The project uses **pnpm** and **Vite+** (`vp`).
 ```
 STUPDT_FRONTEND/
 ├── index.html
+├── Dockerfile                # Build with pnpm, serve with nginx
+├── nginx.conf                # SPA fallback + /api reverse proxy
 ├── vite.config.ts            # Vite+ config, /api dev proxy, lint rules
 ├── tailwind.config.js
 ├── .env.example
@@ -215,7 +236,8 @@ STUPDT_FRONTEND/
     │   ├── layout/           # Header, BrailleBanner, EmergencyBanner, QuoteBar,
     │   │                     #   StatusPills, ToastNotification
     │   ├── modals/           # Bureaucracy, Vision, OrgAbout, Toolkit, Report,
-    │   │                     #   ThemeGatekeeper, GrandFinale, ApologyPdf, ...
+    │   │                     #   ThemeGatekeeper, GrandFinale, ApologyPdf,
+    │   │                     #   LanguageWheel, EmotionalSupport, InfiniteLoading, ...
     │   ├── accessibility/    # SignLanguageWidget
     │   └── common/           # RetroDarkLogo, SampleIllustrationSVG
     │
@@ -226,6 +248,8 @@ STUPDT_FRONTEND/
     │   └── StuPDTContext.jsx # Global state: theme, a11y, metrics, modals, sound
     ├── hooks/                # useChat, useVisionScan, useAudio, useMetrics,
     │                         #   useTheme, useToast, useOfficeEngine
+    ├── i18n/                 # Wheel of Languages: language registry, translate(),
+    │                         #   pigLatin, spinMath, translations/catalog/*
     ├── services/             # apiClient, chatService, gemini, bureaucracyService,
     │                         #   telemetryService, offlineReplies
     ├── utils/                # braille.js, soundEngine.js (Web Audio synthesis)
@@ -240,6 +264,7 @@ STUPDT_FRONTEND/
 - **State:** One `StuPDTContext` holds theme, Braille/sign-language modes, mute, metrics and the active modal. Chat state lives in the `useChat` hook.
 - **Persistence:** Chat history, metrics and VIP status are kept in `sessionStorage`, so a refresh keeps your suffering. The ErrorBoundary offers a _Clear Corrupted Storage & Reload_ button.
 - **Resilience:** Every network call fails soft. 401/403/404/405 responses short-circuit straight to the offline fallback instead of retrying.
+- **i18n:** The Wheel of Languages picks the active language at random; UI strings go through `src/i18n/translate.js` with per-feature catalogs, and untranslated strings fall back to English.
 - **Sound:** All audio is synthesized with the Web Audio API in `soundEngine.js`. There are no audio files to load.
 - **THE OFFICE:** DOM sprites in a 1672×941 world scaled by one transform. One `requestAnimationFrame` loop writes transforms imperatively, with no React state per frame. A fixed-timestep simulation handles A* pathing, a scene director and the huddle choreography, and furniture occludes sprites through y-sorted, clipped copies of the office image. Huddles are derived from `messages`, so `useChat` is untouched.
 
