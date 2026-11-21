@@ -1079,7 +1079,7 @@ const round3 = (v) => Math.round(v * 1000) / 1000;
 // ---------------------------------------------------------------------------
 // QA: contact sheet + per-sheet mask debug
 // ---------------------------------------------------------------------------
-async function buildContactSheet(results) {
+async function buildContactSheet(results, filename) {
   const CELL_W = 130;
   const CELL_H = 215;
   const COLS = 16;
@@ -1141,7 +1141,7 @@ async function buildContactSheet(results) {
   await sharp(base, { raw: { width: W, height: H, channels: 4 } })
     .composite([...comps, { input: overlay, left: 0, top: 0 }])
     .png({ compressionLevel: 9, palette: true, quality: 80 })
-    .toFile(path.join(QA, "contact-sheet.png"));
+    .toFile(path.join(QA, filename));
 }
 
 /** Shows the raw sheet with removed decorations in magenta and kept outlines in cyan. */
@@ -1235,12 +1235,17 @@ async function main() {
   await fs.mkdir(OUT, { recursive: true });
   await fs.mkdir(QA, { recursive: true });
   const only = process.argv.slice(2);
+  for (const name of only) {
+    if (!SHEETS.some((sheet) => sheet.name === name)) throw new Error(`Unknown character: ${name}`);
+  }
   const results = [];
   for (const sheet of SHEETS) {
     if (only.length && !only.includes(sheet.name)) continue;
     results.push(await buildSheet(sheet));
   }
-  await buildContactSheet(results);
+  // A single-character inspection must preserve the full roster QA sheet.
+  const filename = only.length ? `contact-sheet-${results.map((r) => r.sheet.name).join("-")}.png` : "contact-sheet.png";
+  await buildContactSheet(results, filename);
   for (const r of results) await buildMaskDebug(r);
 
   // office background -> WebP
