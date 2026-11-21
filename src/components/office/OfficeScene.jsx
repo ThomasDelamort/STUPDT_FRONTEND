@@ -79,7 +79,7 @@ export function OfficeScene({ messages, isTransferring, transferTarget, activeDe
         const prompt = { id: String(m.id), text: m.text, dept: deptRef.current };
         withEngine((e) => e.prompt(prompt));
         setHint(visibleRatioRef.current < 0.4);
-      } else if (m.sender === "ai" && pendingRef.current) {
+      } else if (m.sender === "ai" && pendingRef.current && !String(m.id).startsWith("vision-")) {
         // AI-only messages (e.g. the vision scan) are not prompts, and only
         // count as a reply when a prompt is waiting for one
         pendingRef.current = false;
@@ -90,9 +90,16 @@ export function OfficeScene({ messages, isTransferring, transferTarget, activeDe
   }, [messages, seen, withEngine]);
 
   // Code Red: the Grand Finale modal
+  const finaleOpen = useRef(false);
   useEffect(() => {
-    withEngine((e) => e.codeRed(activeModal === "grand_finale"));
-  }, [activeModal, withEngine]);
+    const open = activeModal === "grand_finale";
+    if (open === finaleOpen.current) return;
+    finaleOpen.current = open;
+    // Escape closes the finale without dispatching a department transfer.
+    const dismissed = !open && !isTransferring && pendingRef.current;
+    if (dismissed) pendingRef.current = false;
+    withEngine((e) => e.codeRed(open, dismissed));
+  }, [activeModal, isTransferring, withEngine]);
 
   // offscreen hint: shown only while the huddle runs and the office is < 40% visible
   const showHint = hint && visibleRatio < 0.4 && status !== "idle";

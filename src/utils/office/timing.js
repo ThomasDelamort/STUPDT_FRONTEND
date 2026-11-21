@@ -76,12 +76,9 @@ export const TIMING = {
   TYPE_CPS: 38, // typewriter characters per second
   HEAT_STEPS: 3, // bubble outline escalation levels
   VERDICT_MS: 2400, // verdict beat (<= 2.5 s)
-  // A reply that lands before the huddle has even formed (offline replies
-  // take ~1 s) waits for the huddle + this many arc beats, so the zero-setup
-  // demo still shows an argument. Slow (live) replies just end the stalling.
-  VERDICT_MIN_BEATS: 2,
+  VERDICT_DEADLINE: 2.4, // maximum simulation seconds from reply to verdict
+  OPENING_BEAT: 1.6,
   DISPERSE_DELAY_MS: 1500,
-  REPLY_TIMEOUT: 30, // give up waiting for a reply after this (s)
   TICKET_FLIGHT: 0.7,
   BLIP_VOLUME: 0.012, // optional bubble blip (very quiet, respects mute)
 

@@ -1067,19 +1067,20 @@ export const OFFICE_VERDICT_LINES = [
 export const OFFICE_ANOTHER_LINES = [
   { gesture: "exasperated", text: "Another one?!" },
   { gesture: "recoil", text: "ANOTHER ticket?! The pile grows!" },
-  { gesture: "exasperated", text: "Ticket #{n}?! Hide!" },
+  { gesture: "exasperated", text: "Ticket {n}?! Hide!" },
   { gesture: "hop", text: "They're multiplying!" },
+  { gesture: "shrug", text: "A follow-up? To our follow-up?" },
 ];
 
 /** First reaction while running to the huddle (within ~1.2 s). */
 export const OFFICE_ALARM_LINES = [
-  { gesture: "startle", text: "Ticket incoming!" },
-  { gesture: "startle", text: "Huddle! HUDDLE!" },
-  { gesture: "startle", text: "A user! Everyone act busy!" },
-  { gesture: "startle", text: "We have a live one!" },
-  { gesture: "startle", text: "Positions! Look helpful!" },
-  { gesture: "startle", text: "Somebody's typing at us!" },
-  { gesture: "startle", text: "Code Beige! Everyone huddle!" },
+  { gesture: "startle", text: 'Who signed for “{snip}”?' },
+  { gesture: "startle", text: '“{snip}”. Which one of us is on duty?' },
+  { gesture: "startle", text: 'New business. “{snip}”. Volunteers?' },
+  { gesture: "startle", text: '“{snip}” needs a committee.' },
+  { gesture: "startle", text: 'Who let “{snip}” past Intake?' },
+  { gesture: "startle", text: '“{snip}”. There goes lunch.' },
+  { gesture: "startle", text: '“{snip}”. Whose stamp is this?' },
 ];
 
 /** Ambient (idle) micro-bubbles: <= 3 words, rare. */

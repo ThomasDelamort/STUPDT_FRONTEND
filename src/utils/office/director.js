@@ -9,7 +9,7 @@
 // and the Code Red stretch (Grand Finale modal).
 // ============================================================================
 import { TIMING, bubbleLifetimeMs } from "./timing";
-import { Rng } from "./rng";
+import { Rng, hashString } from "./rng";
 import { ACTIVITY_CLASSES, travel, cancelTravel } from "./activities";
 import { viewForVector } from "./actor";
 import {
@@ -327,6 +327,7 @@ export class Director {
   onPrompt(prompt) {
     if (this.mode === "codeRed") {
       this.pendingPrompt = prompt;
+      this.pendingReply = null;
       return;
     }
     if (this.huddle && this.mode === "huddle") {
@@ -340,14 +341,14 @@ export class Director {
   }
 
   onReply(info) {
-    if (this.huddle) this.huddle.reply(info);
+    if (this.pendingPrompt) this.pendingReply = info;
+    else if (this.huddle) this.huddle.reply(info);
   }
 
   /** @param {boolean} on */
-  codeRed(on) {
+  codeRed(on, dismissed = false) {
     if (on) {
       if (this.mode === "codeRed") return;
-      this.preRedMode = this.mode;
       this.mode = "codeRed";
       this.engine.setStatus("codeRed");
       this.engine.bubbles.clearAll();
@@ -360,7 +361,9 @@ export class Director {
     if (this.mode !== "codeRed") return;
     if (this.panic) this.panic.stop();
     this.panic = null;
-    if (this.huddle && !this.huddle.done) {
+    if (dismissed && this.huddle && !this.pendingPrompt) {
+      this.huddle.disperse();
+    } else if (this.huddle && !this.huddle.done) {
       this.mode = "huddle";
       this.engine.setStatus("huddle");
       this.huddle.resume();
@@ -369,7 +372,9 @@ export class Director {
       this.mode = "idle";
       this.onPrompt(this.pendingPrompt);
     } else this.resumeScenes();
+    if (this.pendingReply) this.huddle?.reply(this.pendingReply);
     this.pendingPrompt = null;
+    this.pendingReply = null;
   }
 
   resumeScenes() {
@@ -396,12 +401,12 @@ class Huddle {
     this.d = director;
     this.engine = director.engine;
     this.prompt = prompt;
-    this.rng = new Rng((Date.now() ^ 0x5bd1e995) >>> 0);
     this.ticketNo = this.engine.ticketCounter = (this.engine.ticketCounter || 0) + 1;
+    this.rng = new Rng(hashString(prompt.text) ^ this.ticketNo);
     this.t = 0;
     this.phase = "startle";
     this.done = false;
-    this.replied = false;
+    this.replyDeadline = Infinity;
     this.replyDept = "";
     this.beatIndex = 0;
     this.nextBeatAt = Infinity;
@@ -485,7 +490,7 @@ class Huddle {
   }
 
   goToHuddle() {
-    this.phase = "gather";
+    this.phase = this.currentBeat ? "argue" : "gather";
     this.assignSlots();
     for (const a of this.actors) this.sendToSlot(a);
   }
@@ -541,16 +546,17 @@ class Huddle {
       }
     }
 
-    if (this.phase === "gather" || this.phase === "argue") {
-      if (this.t >= this.firstBubbleAt && !this.alarmed) {
-        this.alarmed = true;
-        this.say(e.dialogue.alarmBeat(this.rng), { short: true });
-        this.phase = "argue";
-        this.nextBeatAt = this.t + bubbleLifetimeMs("x".repeat(12)) / 1000;
-      }
+    if (this.phase === "gather" && this.t >= this.firstBubbleAt) {
+      this.phase = "argue";
+      this.say(e.dialogue.alarmBeat(this.rng, this.prompt.text), { ms: TIMING.OPENING_BEAT * 1000 });
+      this.nextBeatAt = this.t + TIMING.OPENING_BEAT;
     }
 
-    if (this.phase === "argue" && this.t >= this.nextBeatAt) this.nextBeat();
+    if (this.phase === "argue") {
+      const finishLine = this.beatIndex > 0 && this.arrived.size === this.actors.length && this.t >= this.beatEndsAt;
+      if (this.t >= this.replyDeadline || (this.replyDept && finishLine)) this.verdict();
+      else if (this.t >= this.nextBeatAt) this.nextBeat();
+    }
     if (this.phase === "verdict" && this.t >= this.verdictAt) this.disperse();
 
     // revert expired gestures, keep listeners facing the speaker
@@ -572,15 +578,14 @@ class Huddle {
   }
 
   /** Speak a beat: bubble + gesture + caption + blip (+ ticket throw). */
-  say(beat, { short = false } = {}) {
+  say(beat, { ms = bubbleLifetimeMs(beat.text) } = {}) {
     const e = this.engine;
     const sp = this.actor(beat.speaker);
-    const ms = bubbleLifetimeMs(beat.text);
     e.bubbles.say(sp, beat.text, { heat: beat.heat, kind: beat.kind || "argue", ms });
     e.blip(sp);
     this.currentBeat = beat;
     this.beatEndsAt = this.t + ms / 1000;
-    if (!short) this.gesture(sp, beat.gesture, beat.at ? this.actor(beat.at) : null, ms / 1000);
+    this.gesture(sp, beat.gesture, beat.at ? this.actor(beat.at) : null, ms / 1000);
     if (beat.ticket) {
       const to = this.actor(beat.ticket);
       const from = sp.anchorWorld("hand") || { x: sp.x, y: sp.y - 100 };
@@ -612,29 +617,10 @@ class Huddle {
   nextBeat() {
     const e = this.engine;
     const plan = this.plan;
-    // verdict once the reply is in and the arc reached its punchline
-    if (
-      this.replied &&
-      this.beatIndex >= Math.min(TIMING.VERDICT_MIN_BEATS, plan.beats.length) &&
-      this.gatheredEnough()
-    ) {
-      this.verdict();
-      return;
-    }
     let beat;
     if (this.beatIndex < plan.beats.length) {
       beat = plan.beats[this.beatIndex++];
     } else {
-      if (this.replied) {
-        this.verdict();
-        return;
-      }
-      if (this.t > TIMING.REPLY_TIMEOUT) {
-        this.replyDept = "the Feedback Department";
-        this.replied = true;
-        this.verdict();
-        return;
-      }
       beat = e.dialogue.stallBeat(this.rng, 2);
       this.stalls++;
     }
@@ -647,12 +633,9 @@ class Huddle {
       this.t + (len + TIMING.BEAT_GAP_MS - (overlap ? TIMING.OVERLAP_MS : 0)) / 1000;
   }
 
-  gatheredEnough() {
-    return this.arrived.size >= Math.min(this.actors.length, 3);
-  }
-
   reply(info) {
-    this.replied = true;
+    if (this.replyDept || this.phase === "verdict") return;
+    this.replyDeadline = this.t + TIMING.VERDICT_DEADLINE;
     this.replyDept = info.deptName || "the Feedback Department";
     this.engine.debugStats.replyAt = this.t;
   }
@@ -660,34 +643,15 @@ class Huddle {
   /** Second prompt mid-argument: "Another one?!", the pile grows, new topic. */
   another(prompt) {
     const e = this.engine;
-    if (this.phase === "verdict") {
-      // already wrapping up: start a fresh huddle in place
-      this.prompt = prompt;
-      this.ticketNo = e.ticketCounter = (e.ticketCounter || 0) + 1;
-      e.props.tickets.addToPile(this.ticketNo);
-      e.dialogue.beginPrompt();
-      this.plan = e.dialogue.buildPlan(prompt.text, { dept: prompt.dept, ticketNo: this.ticketNo });
-      this.phase = "argue";
-      this.replied = false;
-      this.beatIndex = 0;
-      this.say(e.dialogue.anotherBeat(this.rng, this.ticketNo));
-      this.nextBeatAt = this.t + 2;
-      e.setStatus("huddle");
-      e.debugStats.arc = this.plan.title;
-      return;
-    }
     this.prompt = prompt;
     this.ticketNo = e.ticketCounter = (e.ticketCounter || 0) + 1;
     e.props.tickets.addToPile(this.ticketNo);
     e.dialogue.beginPrompt();
     this.plan = e.dialogue.buildPlan(prompt.text, { dept: prompt.dept, ticketNo: this.ticketNo });
-    this.replied = false;
+    this.replyDept = "";
+    this.replyDeadline = Infinity;
     this.beatIndex = 0;
     e.debugStats.arc = this.plan.title;
-    if (this.phase === "startle" || this.phase === "gather") {
-      this.alarmed = true;
-      this.phase = this.phase === "startle" ? "startle" : "argue";
-    }
     const beat = e.dialogue.anotherBeat(this.rng, this.ticketNo);
     e.bubbles.clearAll();
     this.say(beat);
@@ -701,7 +665,7 @@ class Huddle {
     const beat = e.dialogue.verdictBeat(this.rng, this.replyDept);
     if (this.actors.some((a) => a.id === "neal")) beat.speaker = "neal";
     e.bubbles.clearAll();
-    this.say({ ...beat, kind: "verdict" });
+    this.say({ ...beat, kind: "verdict" }, { ms: TIMING.VERDICT_MS });
     // everyone does their signature emote / cheer
     for (const a of this.actors) {
       if (a.id === beat.speaker) continue;
@@ -717,7 +681,10 @@ class Huddle {
     for (const a of this.actors) {
       a.mark = null;
       a.fxHook = null;
+      a.afterExit = null;
+      if (!a.exiting) cancelTravel(a);
     }
+    this.engine.bubbles.clearAll();
     this.engine.caption(null, null);
     this.d.resumeScenes();
   }
@@ -732,7 +699,7 @@ class Huddle {
     this.arrived.clear();
     this.assignSlots();
     for (const a of this.actors) this.sendToSlot(a);
-    if (this.phase === "startle") this.phase = "gather";
+    if (this.phase === "startle") this.phase = this.currentBeat ? "argue" : "gather";
     this.nextBeatAt = this.t + 1.2;
     if (this.phase === "verdict") this.verdictAt = this.t + 2;
   }

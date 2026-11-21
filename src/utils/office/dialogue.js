@@ -49,10 +49,8 @@ export function detectKeyword(text) {
 }
 
 function fill(template, ctx) {
-  return template
-    .replace(/\{snip\}/g, ctx.snip)
-    .replace(/\{dept\}/g, ctx.dept)
-    .replace(/\{n\}/g, ctx.n);
+  // Insert each slot once. User text may itself contain "{dept}" or "$&".
+  return template.replace(/\{(snip|dept|n)\}/g, (_, key) => ctx[key]);
 }
 
 /**
@@ -179,8 +177,8 @@ export class Dialogue {
     });
   }
 
-  alarmBeat(rng) {
-    return this.lineBeat(this.freshFrom(OFFICE_ALARM_LINES, rng), rng, 0, {});
+  alarmBeat(rng, text) {
+    return this.lineBeat(this.freshFrom(OFFICE_ALARM_LINES, rng), rng, 0, { snip: makeSnip(text) });
   }
 
   panicLine(rng) {

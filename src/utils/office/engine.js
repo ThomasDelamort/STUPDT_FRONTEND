@@ -414,8 +414,8 @@ export class OfficeEngine {
     this.director.onReply(info);
   }
 
-  codeRed(on) {
-    this.director.codeRed(on);
+  codeRed(on, dismissed = false) {
+    this.director.codeRed(on, dismissed);
   }
 
   forceScene(i) {

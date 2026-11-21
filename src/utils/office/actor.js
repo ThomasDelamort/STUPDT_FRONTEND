@@ -284,7 +284,7 @@ export class Actor {
     this.stateTime += dt;
     this.poseTime += dt;
 
-    if (this.path.length) this.integrateMovement(dt);
+    if (this.path.length && this.state !== "startle") this.integrateMovement(dt);
     else {
       this.vx = 0;
       this.vy = 0;
