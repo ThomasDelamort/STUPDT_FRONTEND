@@ -155,7 +155,10 @@ export const OFFICE_ACTIVITY_AFFINITY = {
  * into a seat from the front doesn't pop across the seat's depth line.
  */
 export const OFFICE_SPOTS = {
-  computer: { x: 424, y: 428, approach: { x: 437, y: 522 }, view: "backLeft", behind: "deskChair", labelY: 492 },
+  computer: {
+    x: 424, y: 428, approach: { x: 437, y: 522 }, view: "backLeft",
+    behind: "deskChair", labelY: 492, cropBottom: 0.12,
+  },
   pullup: { x: 708, y: 392, approach: { x: 708, y: 470 }, barY: 186 },
   bag: { x: 774, y: 458, face: 1 },
   weights: { x: 912, y: 450, face: -1 },
@@ -623,8 +626,8 @@ export const OFFICE_POSES = {
   sitMove: { frames: ["interact_0"], sink: 0.3 },
   sitTalk: { frames: ["talk_0"], sink: 0.28 },
   boxGuard: { view: "right" },
-  type: { view: "backLeft", jitter: { amp: 1, hz: 8 }, cropBottom: 0.12 },
-  typeThink: { view: "left", cropBottom: 0.12 },
+  type: { view: "backLeft", jitter: { amp: 1, hz: 8 } },
+  typeThink: { view: "left" },
   paddleReady: { frames: ["idle_0", "idle_1"], fps: 3 },
   swing: { frames: ["interact_0"], lunge: 8 },
   punch: { frames: ["interact_0"], lunge: 10 },

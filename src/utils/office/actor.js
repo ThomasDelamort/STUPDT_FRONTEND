@@ -66,6 +66,7 @@ export class Actor {
     this.directSpeed = 0;
     this.directWalk = false; // animate the walk cycle during a direct move
     this.exiting = false; // standing up / dropping off the bar
+    this.seatSpot = null;
     /** @type {number | null} */ this.zOverride = null; // pinned depth (seats)
     this.travelToken = 0;
     /** @type {any} */ this.activity = null;
@@ -500,8 +501,10 @@ export class Actor {
     const sx = sc * fx.sx * (this.flip ? -1 : 1);
     const sy = sc * fx.sy;
     // The desk uses the upper body of a standing view above the chair seat.
-    const crop = OFFICE_POSES[this.poseName]?.cropBottom || 0;
-    const clip = crop ? `inset(0 0 ${this.cellH - this.pivotY + drawnH * crop}px)` : "";
+    const seat = this.seatSpot;
+    const seated = seat ? Math.max(0, Math.min(1, (seat.approach.y - y) / (seat.approach.y - seat.y))) : 0;
+    const crop = seated > 0 ? (this.cellH - this.pivotY + drawnH * seat.cropBottom) * seated : 0;
+    const clip = crop ? `inset(0 0 ${crop.toFixed(1)}px)` : "";
     if (clip !== this._clip) {
       this.el.style.clipPath = clip;
       this._clip = clip;
@@ -539,7 +542,7 @@ export class Actor {
     }
 
     // name tag: just under the feet, in screen px
-    const labelY = this.labelFloorY ? Math.max(y, this.labelFloorY) : y;
+    const labelY = seat ? Math.max(y, seat.labelY) : y;
     const tagT = `translate3d(${(x * s).toFixed(1)}px,${((labelY + 6) * s).toFixed(1)}px,0) translateX(-50%)`;
     if (tagT !== this._tagT) {
       this.tagEl.style.transform = tagT;

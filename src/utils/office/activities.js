@@ -247,7 +247,7 @@ export class Activity {
 // ===========================================================================
 export class ComputerActivity extends Activity {
   enter(m) {
-    m.actor.labelFloorY = m.spot.labelY;
+    m.actor.seatSpot = m.spot;
     m.actor.setPose("type");
     travel(this.engine, m.actor, m.spot, {
       direct: true,
@@ -258,7 +258,7 @@ export class ComputerActivity extends Activity {
   }
 
   onPerform(m) {
-    m.actor.labelFloorY = m.spot.labelY;
+    m.actor.seatSpot = m.spot;
     m.actor.setPose("type");
     m.data.nextTurn = this.rng.range(...TIMING.TYPE_HEADTURN);
     m.data.turning = 0;
@@ -285,7 +285,7 @@ export class ComputerActivity extends Activity {
       speed,
       walk: false,
       onArrive: () => {
-        m.actor.labelFloorY = null;
+        m.actor.seatSpot = null;
         done();
       },
     });
