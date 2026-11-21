@@ -1,8 +1,14 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { StuPDTProvider } from "./contexts/StuPDTContext";
 import { useStuPDT } from "./contexts/useStuPDT";
-import { DEPARTMENTS, CAPTCHA_TILES, LEGAL_MATH_PROBLEMS } from "./constants";
-import { fetchCaptchaData } from "./services/apiClient";
+import { DEPARTMENTS, LEGAL_MATH_PROBLEMS, getRandomCaptchaChallenge } from "./constants";
+import {
+  fetchCaptchaData,
+  fetchServerCaptchaChallenge,
+  verifyServerCaptchaTiles,
+  verifyServerMathAnswer,
+  fetchServerMathHint,
+} from "./services/apiClient";
 import { useChat } from "./hooks/useChat";
 import { useVisionScan } from "./hooks/useVisionScan";
 
@@ -73,7 +79,10 @@ function StuPDTApp() {
 
   // Theme Gatekeeper State (Captcha -> Mandatory Legal Math)
   const [themeGateStep, setThemeGateStep] = useState(null);
-  const [captchaTiles, setCaptchaTiles] = useState(CAPTCHA_TILES);
+  const [activeCaptchaChallenge, setActiveCaptchaChallenge] = useState(() =>
+    getRandomCaptchaChallenge(),
+  );
+  const [captchaTiles, setCaptchaTiles] = useState(() => activeCaptchaChallenge.tiles);
   const [legalMathProblems, setLegalMathProblems] = useState(LEGAL_MATH_PROBLEMS);
   const [selectedCaptchaIds, setSelectedCaptchaIds] = useState([]);
   const [captchaError, setCaptchaError] = useState("");
@@ -81,13 +90,15 @@ function StuPDTApp() {
   const [mathInput, setMathInput] = useState("");
   const [mathError, setMathError] = useState("");
   const [showMathHint, setShowMathHint] = useState(false);
+  const [serverHint, setServerHint] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  // Load dynamic captcha puzzle from backend if available
+  // Load dynamic math problems from backend if available
   useEffect(() => {
     void fetchCaptchaData().then((data) => {
-      if (data?.tiles && Array.isArray(data.tiles)) setCaptchaTiles(data.tiles);
-      if (data?.mathProblems && Array.isArray(data.mathProblems))
+      if (data?.mathProblems && Array.isArray(data.mathProblems) && data.mathProblems.length > 0) {
         setLegalMathProblems(data.mathProblems);
+      }
     });
   }, []);
 
@@ -106,7 +117,7 @@ function StuPDTApp() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [themeGateStep, activeModal, setActiveModal]);
 
-  const handleThemeButtonClick = () => {
+  const handleThemeButtonClick = async () => {
     if (isDarkMode) {
       soundFX.playRubberStamp();
       setSelectedCaptchaIds([]);
@@ -114,7 +125,27 @@ function StuPDTApp() {
       setMathInput("");
       setMathError("");
       setShowMathHint(false);
-      setActiveMathProblem(legalMathProblems[Math.floor(Math.random() * legalMathProblems.length)]);
+      setServerHint(null);
+
+      // Attempt to fetch randomized challenge directly from backend
+      const serverChallenge = await fetchServerCaptchaChallenge(activeCaptchaChallenge?.targetType);
+      if (serverChallenge) {
+        setActiveCaptchaChallenge(serverChallenge);
+        setCaptchaTiles(serverChallenge.tiles);
+        setActiveMathProblem(serverChallenge.mathProblem);
+      } else {
+        // Fallback to local random generator if server is offline
+        const freshCaptcha = getRandomCaptchaChallenge(activeCaptchaChallenge?.targetType);
+        setActiveCaptchaChallenge(freshCaptcha);
+        setCaptchaTiles(freshCaptcha.tiles);
+
+        const pool = legalMathProblems.filter((p) => p.id !== activeMathProblem?.id);
+        const candidates = pool.length > 0 ? pool : legalMathProblems;
+        const nextProblem =
+          candidates[Math.floor(Math.random() * candidates.length)] || candidates[0];
+        setActiveMathProblem(nextProblem);
+      }
+
       setThemeGateStep("captcha");
     } else {
       soundFX.playChime();
@@ -129,45 +160,115 @@ function StuPDTApp() {
     );
   };
 
-  const verifyCaptcha = () => {
-    const correctIds = captchaTiles
-      .filter((t) => t.isTrafficLight)
-      .map((t) => t.id)
-      .sort((a, b) => String(a).localeCompare(String(b)))
-      .join(",");
-    const pickedIds = [...selectedCaptchaIds]
-      .sort((a, b) => String(a).localeCompare(String(b)))
-      .join(",");
+  const verifyCaptcha = async () => {
+    if (isVerifying) return;
+    setIsVerifying(true);
+    try {
+      if (activeCaptchaChallenge?.challengeId) {
+        // Backend verification - server validates tile IDs securely
+        const res = await verifyServerCaptchaTiles(
+          activeCaptchaChallenge.challengeId,
+          selectedCaptchaIds,
+        );
+        if (res.valid) {
+          soundFX.playChime();
+          setCaptchaError("");
+          setThemeGateStep("math");
+        } else {
+          soundFX.playErrorBuzz();
+          setCaptchaError(
+            res.error ||
+              `Suspiciously robotic click detected. Try clicking ONLY the ${activeCaptchaChallenge?.count || 3} ${activeCaptchaChallenge?.targetNamePlural || "matching squares"}!`,
+          );
+        }
+      } else {
+        // Fallback verification for offline mode
+        const correctIds = captchaTiles
+          .filter((t) => t.isTarget || t.isTrafficLight)
+          .map((t) => Number(t.id))
+          .sort((a, b) => a - b)
+          .join(",");
+        const pickedIds = [...selectedCaptchaIds]
+          .map((id) => Number(id))
+          .sort((a, b) => a - b)
+          .join(",");
 
-    if (pickedIds === correctIds) {
-      soundFX.playChime();
-      setCaptchaError("");
-      setThemeGateStep("math");
-    } else {
-      soundFX.playErrorBuzz();
-      setCaptchaError(
-        "Suspiciously robotic click detected. Try clicking ONLY the 3 actual Traffic Lights!",
-      );
+        if (pickedIds === correctIds && pickedIds.length > 0) {
+          soundFX.playChime();
+          setCaptchaError("");
+          setThemeGateStep("math");
+        } else {
+          soundFX.playErrorBuzz();
+          setCaptchaError(
+            `Suspiciously robotic click detected. Try clicking ONLY the ${activeCaptchaChallenge?.count || 3} ${activeCaptchaChallenge?.targetNamePlural || "matching squares"}!`,
+          );
+        }
+      }
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  const verifyMathProblem = (e) => {
+  const verifyMathProblem = async (e) => {
     e.preventDefault();
-    if (mathInput.trim() === activeMathProblem.answer) {
-      soundFX.playChime();
-      setMathError("");
-      setThemeGateStep("approved");
-      setTimeout(() => {
-        setIsDarkMode(false);
-        setThemeGateStep(null);
-        triggerToast("FORM LT-001 APPROVED! Deploying Retina-Scorching Alpine Light Mode!");
-      }, 1350);
-    } else {
-      soundFX.playErrorBuzz();
-      setMathError(
-        "Incorrect arithmetic! Our server hamsters have rejected your brightness permit. Try again (or ask the Math Specialist for a hint)!",
-      );
+    if (isVerifying) return;
+    setIsVerifying(true);
+    try {
+      if (activeCaptchaChallenge?.challengeId) {
+        // Backend verification - server validates answer securely
+        const res = await verifyServerMathAnswer(
+          activeCaptchaChallenge.challengeId,
+          mathInput.trim(),
+        );
+        if (res.approved) {
+          soundFX.playChime();
+          setMathError("");
+          setThemeGateStep("approved");
+          setTimeout(() => {
+            setIsDarkMode(false);
+            setThemeGateStep(null);
+            triggerToast("FORM LT-001 APPROVED! Deploying Retina-Scorching Alpine Light Mode!");
+          }, 1350);
+        } else {
+          soundFX.playErrorBuzz();
+          setMathError(
+            res.error ||
+              "Incorrect arithmetic! Our server hamsters have rejected your brightness permit. Try again (or ask the Math Specialist for a hint)!",
+          );
+        }
+      } else {
+        // Fallback verification for offline mode
+        if (mathInput.trim() === activeMathProblem.answer) {
+          soundFX.playChime();
+          setMathError("");
+          setThemeGateStep("approved");
+          setTimeout(() => {
+            setIsDarkMode(false);
+            setThemeGateStep(null);
+            triggerToast("FORM LT-001 APPROVED! Deploying Retina-Scorching Alpine Light Mode!");
+          }, 1350);
+        } else {
+          soundFX.playErrorBuzz();
+          setMathError(
+            "Incorrect arithmetic! Our server hamsters have rejected your brightness permit. Try again (or ask the Math Specialist for a hint)!",
+          );
+        }
+      }
+    } finally {
+      setIsVerifying(false);
     }
+  };
+
+  const handleRequestHint = async () => {
+    if (activeCaptchaChallenge?.challengeId) {
+      const hint = await fetchServerMathHint(activeCaptchaChallenge.challengeId);
+      if (hint) {
+        setServerHint(hint);
+        setShowMathHint(true);
+        return;
+      }
+    }
+    setShowMathHint(true);
   };
 
   // Grand Finale Choice Handler
@@ -265,6 +366,7 @@ function StuPDTApp() {
       <ThemeGatekeeperModal
         themeGateStep={themeGateStep}
         setThemeGateStep={setThemeGateStep}
+        activeCaptchaChallenge={activeCaptchaChallenge}
         captchaTiles={captchaTiles}
         selectedCaptchaIds={selectedCaptchaIds}
         toggleCaptchaTile={toggleCaptchaTile}
@@ -278,6 +380,9 @@ function StuPDTApp() {
         showMathHint={showMathHint}
         setShowMathHint={setShowMathHint}
         verifyMathProblem={verifyMathProblem}
+        serverHint={serverHint}
+        onRequestHint={handleRequestHint}
+        isVerifying={isVerifying}
       />
       <VisionAIModal
         visionSamples={visionSamples}
