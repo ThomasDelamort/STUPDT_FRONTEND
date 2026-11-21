@@ -98,7 +98,7 @@ export function OfficeScene({ messages, isTransferring, transferTarget, activeDe
   const showHint = hint && visibleRatio < 0.4 && status !== "idle";
 
   const scrollToOffice = useCallback(() => {
-    cardRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    cardRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
     setHint(false);
   }, [reducedMotion]);
 
@@ -128,10 +128,16 @@ export function OfficeScene({ messages, isTransferring, transferTarget, activeDe
   // ---- chrome -------------------------------------------------------------
   const chip = useMemo(() => {
     if (status === "codeRed")
-      return { label: OFFICE_COPY.statusCodeRed, Icon: Siren, cls: "bg-[#F52820] text-white border-[#F52820]" };
+      return {
+        label: OFFICE_COPY.statusCodeRed,
+        short: OFFICE_COPY.statusCodeRed,
+        Icon: Siren,
+        cls: "bg-[#F52820] text-white border-[#F52820]",
+      };
     if (status === "huddle")
       return {
         label: OFFICE_COPY.statusHuddle,
+        short: OFFICE_COPY.statusHuddleShort,
         Icon: MessagesSquare,
         cls: isDarkMode
           ? "bg-[#FF6B1A]/15 text-[#FF6B1A] border-[#FF6B1A]/50"
@@ -139,6 +145,7 @@ export function OfficeScene({ messages, isTransferring, transferTarget, activeDe
       };
     return {
       label: OFFICE_COPY.statusIdle,
+      short: OFFICE_COPY.statusIdle,
       Icon: Coffee,
       cls: isDarkMode
         ? "bg-[#1FE03F]/15 text-[#1FE03F] border-[#1FE03F]/40"
@@ -195,7 +202,8 @@ export function OfficeScene({ messages, isTransferring, transferTarget, activeDe
             className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-black uppercase tracking-wider ${chip.cls}`}
           >
             <chip.Icon className="w-3 h-3" />
-            <span className="max-w-[44vw] sm:max-w-none truncate">{tx(chip.label)}</span>
+            <span className="sm:hidden">{tx(chip.short)}</span>
+            <span className="hidden sm:inline">{tx(chip.label)}</span>
           </span>
         </div>
       </div>

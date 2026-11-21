@@ -39,6 +39,9 @@ export function travel(engine, actor, target, { mode = "walk", direct = false, s
 export function cancelTravel(actor) {
   actor.travelToken = ++tokenSeq;
   actor.stop();
+  // a cancelled stand-up can never call its "free" callback: don't leave
+  // the actor flagged as exiting forever
+  actor.exiting = false;
 }
 
 export class Activity {
@@ -115,6 +118,7 @@ export class Activity {
   }
 
   depart(m) {
+    m.actor.zOverride = null;
     m.phase = "travel";
     m.actor.state = "go_to";
     m.actor.setPose("stand", { view: null });

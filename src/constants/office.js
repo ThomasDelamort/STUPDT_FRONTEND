@@ -170,7 +170,7 @@ export const OFFICE_SPOTS = {
   couch2: { x: 530, y: 722, approach: { x: 590, y: 780 }, view: "front", behind: "couchFront" },
   couch3: { x: 640, y: 712, approach: { x: 620, y: 806 }, view: "front", behind: "couchFront" },
   chessA: { x: 752, y: 812, approach: { x: 740, y: 928 }, view: "backRight", face: 1, behind: "chessChairA" },
-  chessB: { x: 995, y: 664, approach: { x: 995, y: 586 }, view: "frontLeft", face: -1 },
+  chessB: { x: 995, y: 664, approach: { x: 1078, y: 590 }, view: "frontLeft", face: -1 },
   beanbag: { x: 1508, y: 712, approach: { x: 1345, y: 690 }, face: 1 },
 };
 
@@ -222,15 +222,16 @@ export const OFFICE_WANDER = [
 
 /** The huddle: ellipse around the open floor between the rug and chess. */
 export const OFFICE_HUDDLE = {
-  // calibrated: every slot clears the couch arm (left) and the chess table
-  // (below) once inflated by the actor radius
-  x: 930,
+  // calibrated: every slot clears the couch arm (left), the chess table
+  // (below) and the mouth of the desk/couch corridor, so nobody standing in
+  // a slot can wall off another actor's route
+  x: 970,
   y: 535,
-  rx: 210,
+  rx: 178,
   ry: 52,
   // slot angles (degrees, screen space: 90 = towards the camera)
   slots: [190, 255, 345, 80, 300, 215],
-  ticketPile: { x: 930, y: 548 },
+  ticketPile: { x: 968, y: 548 },
 };
 
 // ---------------------------------------------------------------------------
@@ -921,6 +922,8 @@ export const OFFICE_VERDICT_LINES = [
   { gesture: "cheer", text: "Unanimous! {dept}'s problem now." },
   { gesture: "shrug", text: "Forwarded to {dept}. Case closed." },
   { gesture: "emote", text: "{dept} answered! (They didn't.)" },
+  { gesture: "cheer", text: "Great teamwork. {dept} owns it." },
+  { gesture: "point", text: "Ruling: {dept}. No appeals." },
 ];
 
 /** A second prompt lands mid-argument. */
@@ -937,6 +940,9 @@ export const OFFICE_ALARM_LINES = [
   { gesture: "startle", text: "Huddle! HUDDLE!" },
   { gesture: "startle", text: "A user! Everyone act busy!" },
   { gesture: "startle", text: "We have a live one!" },
+  { gesture: "startle", text: "Positions! Look helpful!" },
+  { gesture: "startle", text: "Somebody's typing at us!" },
+  { gesture: "startle", text: "Code Beige! Everyone huddle!" },
 ];
 
 /** Ambient (idle) micro-bubbles: <= 3 words, rare. */
@@ -968,6 +974,7 @@ export const OFFICE_COPY = {
   subtitle: "Live Feed: Staff Currently Doing Nothing Productively",
   statusIdle: "ON BREAK",
   statusHuddle: "HUDDLE: REVIEWING YOUR CONCERN",
+  statusHuddleShort: "HUDDLE IN PROGRESS",
   statusCodeRed: "CODE RED",
   captionIdle: "Live from the break room. No tickets are being processed at this time.",
   offscreenHint: "The staff are discussing your message",

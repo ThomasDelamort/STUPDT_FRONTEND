@@ -58,6 +58,7 @@ export class Actor {
     this.directWalk = false; // animate the walk cycle during a direct move
     this.exiting = false; // standing up / dropping off the bar
     /** @type {number | null} */ this.zOverride = null; // pinned depth (seats)
+    this.ghostUntil = 0; // separation ignored until (deadlock escape)
     this.travelToken = 0;
     /** @type {any} */ this.activity = null;
     /** @type {any} */ this.member = null;
@@ -178,7 +179,7 @@ export class Actor {
     this.path = path;
     this.goal = path[path.length - 1];
     this.moveMode = opts.mode || "walk";
-    // long dashes sprint (up to +35%): far-away staff still make the huddle
+    // long dashes sprint (up to +45%): far-away staff still make the huddle
     let len = 0;
     let px = this.x;
     let py = this.y;
@@ -187,7 +188,7 @@ export class Actor {
       px = p.x;
       py = p.y;
     }
-    this.sprint = this.moveMode === "run" ? 1 + Math.max(0, Math.min(0.35, (len - 380) / 900)) : 1;
+    this.sprint = this.moveMode === "run" ? 1 + Math.max(0, Math.min(0.45, (len - 380) / 800)) : 1;
     this.direct = false;
     this.onArrive = opts.onArrive || null;
     this.blockedFor = 0;
@@ -289,7 +290,7 @@ export class Actor {
 
     // teleport guard (debug counter): nothing may move faster than running
     const moved = Math.hypot(this.x - this.px, this.y - this.py);
-    if (moved > TIMING.RUN_SPEED * 1.6 * dt + 0.5 && !this.engine.allowJump) {
+    if (moved > TIMING.RUN_SPEED * 1.8 * dt + 0.5 && !this.engine.allowJump) {
       this.engine.debugStats.teleports++;
       if (this.engine.debug) console.warn(`[office] ${this.id} jumped ${moved.toFixed(1)}px in one step`);
     }
@@ -319,9 +320,16 @@ export class Actor {
     // (the last few px of the final leg never yield: a neighbour that happens
     // to sit "ahead" of a tiny remaining vector must not freeze the arrival)
     if (!this.direct && !(isLast && dist < 14)) {
-      const other = this.engine.actorAhead(this, dx / (dist || 1), dy / (dist || 1));
+      const other = this.ghostUntil > this.engine.time ? null : this.engine.actorAhead(this, dx / (dist || 1), dy / (dist || 1));
       if (other) {
         this.blockedFor += dt;
+        // last resort against deadlocks: someone parked in a 1-wide corridor
+        // who will never move -> squeeze past them (brief overlap, no freeze)
+        if (this.blockedFor > TIMING.YIELD_MAX * 3.5 && Math.hypot(other.vx, other.vy) < 1) {
+          this.ghostUntil = this.engine.time + 1.4;
+          this.blockedFor = 0;
+          return;
+        }
         if (this.blockedFor > TIMING.YIELD_MAX * 2.5 && other.index < this.index && !this.sidestepping) {
           this.sidestep(other);
           return;
@@ -341,6 +349,9 @@ export class Actor {
       }
       this.blockedFor = 0;
       this.replanned = false;
+      // fall in line behind someone heading the same way
+      const leader = this.engine.leaderAhead(this, dx / (dist || 1), dy / (dist || 1));
+      if (leader) speed = Math.min(speed, Math.hypot(leader.vx, leader.vy) * 0.97);
     }
 
     const stepLen = speed * dt;

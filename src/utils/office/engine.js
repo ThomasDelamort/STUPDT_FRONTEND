@@ -329,6 +329,24 @@ export class OfficeEngine {
     return null;
   }
 
+  /**
+   * A moving actor just ahead, heading the same way: followers slow down to
+   * fall in line (queue) instead of clumping. Never blocks, never deadlocks.
+   */
+  leaderAhead(actor, nx, ny) {
+    for (const o of this.actors) {
+      if (o === actor || o.alpha < 0.5) continue;
+      const sp = Math.hypot(o.vx, o.vy);
+      if (sp < 1) continue;
+      const d = ellipseDist(actor.x, actor.y, o.x, o.y);
+      if (d > TIMING.PERSONAL_SPACE * 1.6) continue;
+      const dot = ((o.x - actor.x) * nx + (o.y - actor.y) * ny) / (d || 1);
+      const same = (o.vx * nx + o.vy * ny) / sp;
+      if (dot > 0.6 && same > 0.5) return o;
+    }
+    return null;
+  }
+
   setScale(s, sceneW) {
     this.scale = s;
     this.sceneW = sceneW;

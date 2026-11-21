@@ -156,18 +156,25 @@ export class Dialogue {
     return this.lineBeat(l, rng, heat, {});
   }
 
+  /** Pick from a fixed pool, skipping lines used in the last 5 prompts. */
+  freshFrom(pool, rng) {
+    const recent = this.recent();
+    const fresh = pool.filter((l) => !recent.has(l.text));
+    const l = rng.pick(fresh.length ? fresh : pool);
+    this.use(l.text);
+    return l;
+  }
+
   verdictBeat(rng, dept) {
-    const l = rng.pick(OFFICE_VERDICT_LINES);
-    return this.lineBeat(l, rng, 1, { dept: shortDept(dept) });
+    return this.lineBeat(this.freshFrom(OFFICE_VERDICT_LINES, rng), rng, 1, { dept: shortDept(dept) });
   }
 
   anotherBeat(rng, n) {
-    const l = rng.pick(OFFICE_ANOTHER_LINES);
-    return this.lineBeat(l, rng, 3, { n: `#${String(n).padStart(3, "0")}` });
+    return this.lineBeat(this.freshFrom(OFFICE_ANOTHER_LINES, rng), rng, 3, { n: `#${String(n).padStart(3, "0")}` });
   }
 
   alarmBeat(rng) {
-    return this.lineBeat(rng.pick(OFFICE_ALARM_LINES), rng, 0, {});
+    return this.lineBeat(this.freshFrom(OFFICE_ALARM_LINES, rng), rng, 0, {});
   }
 
   panicLine(rng) {

@@ -292,7 +292,7 @@ export class Director {
   interruptAll({ urgent = true } = {}) {
     for (const a of this.engine.actors) {
       if (a.activity) a.activity.release(a, { urgent });
-      else cancelTravel(a);
+      else if (!a.exiting) cancelTravel(a); // let a stand-up in progress finish
       a.state = "startle";
     }
     for (const act of this.activities) act.finished = true;
@@ -466,6 +466,7 @@ class Huddle {
     a.fxHook = null;
     a.state = "go_to_huddle";
     const go = () => {
+      a.zOverride = null;
       a.setPose("stand");
       travel(this.engine, a, slot, {
         mode: "run",
@@ -730,7 +731,8 @@ class Panic {
     this.t += dt;
     this.timer -= dt;
     for (const a of this.engine.actors) {
-      if (a.moving) continue;
+      if (a.moving || a.exiting) continue;
+      a.zOverride = null;
       a.panicAt -= dt;
       if (a.panicAt > 0) continue;
       if (this.rng.chance(0.3)) {
