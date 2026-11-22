@@ -4,7 +4,11 @@ import { defineConfig, loadEnv, lazyPlugins } from "vite-plus";
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const backendTarget = env.VITE_BACKEND_URL || env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+  const backendTarget =
+    env.VITE_BACKEND_URL ||
+    env.VITE_API_BASE_URL ||
+    (process.env.BACKEND_PORT ? `http://127.0.0.1:${process.env.BACKEND_PORT}` : null) ||
+    "http://127.0.0.1:8000";
 
   return {
     fmt: {},

@@ -4,14 +4,16 @@
  * timeout controls, and backend health status detection.
  */
 
-export const API_BASE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) || "";
+export const API_BASE_URL = (
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) || ""
+).replace(/\/+$/, "");
 
 /**
  * Standard fetch wrapper with timeout and JSON handling
  */
 export async function apiFetch(endpoint, options = {}, timeoutMs = 8000) {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const url = API_BASE_URL ? `${API_BASE_URL}${cleanEndpoint}` : cleanEndpoint;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
